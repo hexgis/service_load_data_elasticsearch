@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    logging:
+      driver: none
+    environment:
+      - discovery.type=single-node
+      - "http.cors.allow-origin=*"
+      - "http.cors.enabled=true"
+      - "http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Con\
+        tent-Length,Authorization"
+      - "http.cors.allow-credentials=true"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  dev:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: >
+      bash -c " python manage.py runserver 0.0.0.0:8080"
+    environment:
+      ELASTICSEARCH_URL: http://es:9200
+    volumes:
+      - .:/app/
+    network_mode: "host"
+    depends_on:
+      - es
+
+  prod:
+    image: service-load-data-elasticsearch
+    build: .
+    command: >
+      bash -c " python manage.py runserver 0.0.0.0:8080"
+    environment:
+      DB_NAME: test_db
+      DB_USER: test_user
+      DB_PASSWORD: test_pass
+      DB_HOST: db
+      DB_PORT: 5432
+      AUTH_TOKEN: Token secret
+      ELASTICSEARCH_URL: http://es:9200
+    volumes:
+      - .:/app/
+    ports:
+      - 8080:8080
