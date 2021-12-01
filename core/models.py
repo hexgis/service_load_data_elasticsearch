@@ -1,10 +1,7 @@
-from django.db import models
+from django.contrib.gis.db import models
 
 
 class Detection(models.Model):
-
-    id = models.IntegerField(primary_key=True)
-
     tb_ciclo_monitoramento_id = models.IntegerField()
 
     sg_uf = models.CharField(max_length=2)
@@ -29,10 +26,10 @@ class Detection(models.Model):
 
     dt_cadastro = models.DateTimeField()
 
-    geometry = models.CharField(max_length=1000)
+    geometry = models.GeometryField(srid=4674)
 
     def __str__(self):
-        return self.id + ' ' + self.dt_cadastro
+        return self.no_estagio
 
     class Meta:
         managed = False

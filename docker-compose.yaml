@@ -21,14 +21,17 @@ services:
       context: .
       dockerfile: ./Dockerfile
     command: >
-      bash -c " python manage.py runserver 0.0.0.0:8080"
+      bash -c "
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8080"
     environment:
       ELASTICSEARCH_URL: http://es:9200
     volumes:
       - .:/app/
     network_mode: "host"
-    depends_on:
-      - es
+    # depends_on:
+    #   - es
 
   prod:
     image: service-load-data-elasticsearch
@@ -43,6 +46,8 @@ services:
       DB_PORT: 5432
       AUTH_TOKEN: Token secret
       ELASTICSEARCH_URL: http://es:9200
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/google/key.json
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: "{ Token }"
     volumes:
       - .:/app/
     ports:
