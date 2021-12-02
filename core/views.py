@@ -27,13 +27,24 @@ class UpdateJsonFileView(generics.CreateAPIView):
 
         json_file = json.loads(request.FILES['file'].read())
         serializer = DetectionSerializer(data=json_file['features'], many=True)
-        if serializer.is_valid():
-            self.create_es(serializer.data)
+        serializer.is_valid(raise_exception=True)
+        # self.perform_create(serializer)
 
-        return response.Response(ser.data, status=status.HTTP_201_CREATED)
+        # import pdb
+        # pdb.set_trace()
 
-    def create_es(self, data):
-        import pdb
-        pdb.set_trace()
+        # serializer.save()
 
-        detection = Detection(**data)
+        bulk_list = self.create_bulk_es(serializer.validated_data)
+
+        self.send_bulk_list(bulk_list)
+
+        return response.Response("{msg: OK}", status=status.HTTP_201_CREATED)
+
+    def create_bulk_es(self, data):
+        detections = [Detection(**value) for value in data]
+
+        return [detec.get_es_insertion_line() for detec in detections]
+
+    def send_bulk_list(self, bulk_list):
+        print(bulk_list)

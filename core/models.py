@@ -1,7 +1,10 @@
 from django.contrib.gis.db import models
+import random
 
 
 class Detection(models.Model):
+    id = models.IntegerField(primary_key=True)
+
     tb_ciclo_monitoramento_id = models.IntegerField()
 
     sg_uf = models.CharField(max_length=2)
@@ -30,6 +33,16 @@ class Detection(models.Model):
 
     def __str__(self):
         return self.no_estagio
+
+    def get_es_insertion_line(self):
+
+        fields = [
+            f'"{f.get_attname()}": "{getattr(self, f.get_attname())}"' for f in self._meta.get_fields()]
+
+        es_data_header = f'{{ "create": {{ "_id": "{self.id}"}}}}'
+        es_data_line = ", ".join(fields)
+
+        return f'{es_data_header}\n{{{es_data_line}}}'
 
     class Meta:
         managed = False
