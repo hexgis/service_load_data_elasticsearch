@@ -22,7 +22,7 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
         model = Detection
         geo_field = 'geometry'
         fields = (
-            # 'id',
+            '_id',
             'tb_ciclo_monitoramento_id',
             'no_estagio',
             'no_imagem',
@@ -83,45 +83,28 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
     # def create(self, validated_data):
     #     return Detection(**validated_data)
 
-    # def unformat_geojson(self, feature):
+    def unformat_geojson(self, feature):
+        # import pdb
+        # pdb.set_trace()
 
-    #     # detection = Detection(
-    #     #     geometry=geos.GEOSGeometry(geos.GEOSGeometry(
-    #     #         json.dumps(feature["geometry"])).wkt, srid=4674),
-    #     #     tb_ciclo_monitoramento_id=feature['properties']['tb_ciclo_monitoramento_id'],
-    #     #     no_estagio=feature["properties"]["no_estagio"],
-    #     #     no_imagem=feature["properties"]["no_imagem"],
-    #     #     dt_imagem=feature["properties"]["dt_imagem"].replace('/', '-'),
-    #     #     sg_uf=feature["properties"]["sg_uf"],
-    #     #     nu_orbita=feature["properties"]["nu_orbita"],
-    #     #     nu_ponto=feature["properties"]["nu_ponto"],
-    #     #     dt_t_zero=feature["properties"]["dt_t_zero"].replace('/', '-'),
-    #     #     dt_t_um=feature["properties"]["dt_t_um"].replace('/', '-'),
-    #     #     nu_area_km2=feature["properties"]["nu_area_km2"],
-    #     #     nu_area_ha=feature["properties"]["nu_area_ha"],
-    #     #     dt_cadastro=feature["properties"]["dt_cadastro"].replace('/', '-')
-    #     # )
+        attr = {
+            '_id': feature['properties']['id'],
+            'geometry': geos.GEOSGeometry(geos.GEOSGeometry(json.dumps(feature["geometry"])).wkt, srid=4674),
+            'tb_ciclo_monitoramento_id': feature['properties']['tb_ciclo_monitoramento_id'],
+            "no_estagio": feature["properties"]["no_estagio"],
+            "no_imagem": feature["properties"]["no_imagem"],
+            "sg_uf": feature["properties"]["sg_uf"],
+            "nu_orbita": feature["properties"]["nu_orbita"],
+            "nu_ponto": feature["properties"]["nu_ponto"],
+            "nu_area_km2": feature["properties"]["nu_area_km2"],
+            "nu_area_ha": feature["properties"]["nu_area_ha"],
+            "dt_t_zero": feature["properties"]["dt_t_zero"].replace('/', '-'),
+            "dt_t_um": feature["properties"]["dt_t_um"].replace('/', '-'),
+            "dt_imagem": feature["properties"]["dt_imagem"].replace('/', '-'),
+            "dt_cadastro": feature["properties"]["dt_cadastro"].replace('/', '-'),
+        }
 
-    #     # # import pdb
-    #     # # pdb.set_trace()
-
-    #     # return detection
-
-    #     return {
-    #         'geometry': geos.GEOSGeometry(geos.GEOSGeometry(json.dumps(feature["geometry"])).wkt, srid=4674),
-    #         'tb_ciclo_monitoramento_id': feature['properties']['tb_ciclo_monitoramento_id'],
-    #         "no_estagio": feature["properties"]["no_estagio"],
-    #         "no_imagem": feature["properties"]["no_imagem"],
-    #         "dt_imagem": feature["properties"]["dt_imagem"].replace('/', '-'),
-    #         "sg_uf": feature["properties"]["sg_uf"],
-    #         "nu_orbita": feature["properties"]["nu_orbita"],
-    #         "nu_ponto": feature["properties"]["nu_ponto"],
-    #         "dt_t_zero": feature["properties"]["dt_t_zero"].replace('/', '-'),
-    #         "dt_t_um": feature["properties"]["dt_t_um"].replace('/', '-'),
-    #         "nu_area_km2": feature["properties"]["nu_area_km2"],
-    #         "nu_area_ha": feature["properties"]["nu_area_ha"],
-    #         "dt_cadastro": feature["properties"]["dt_cadastro"].replace('/', '-'),
-    #     }
+        return attr
 
     # def create(self, validated_data):
     #     return validated_data

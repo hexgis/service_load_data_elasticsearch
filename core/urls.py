@@ -15,10 +15,19 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import (UpdateJsonFileView)
+from .views import (UpdateDetectionView,
+                    ClearDetectionStructure, CreateDetectionStructure)
 
 urlpatterns = [
     # path('create', CreateES.as_view(), name='create-es-structure'),
-    # path('delete', DeleteES.as_view(), name='delete-es-structure'),
-    path('update', UpdateJsonFileView.as_view(), name='update')
+    path('delete-detection', ClearDetectionStructure.as_view(),
+         name='delete-detection'),
+    path('update-detection', UpdateDetectionView.as_view(), name='update-detection'),
+    path('create-detection', CreateDetectionStructure.as_view(),
+         name='create-detection'),
+
+    path('delete-soy', ClearDetectionStructure.as_view(), name='delete-detection'),
+    path('update-soy', UpdateDetectionView.as_view(), name='update-detection'),
+    path('create-soy', CreateDetectionStructure.as_view(), name='create-detection'),
+
 ]
