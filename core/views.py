@@ -1,6 +1,6 @@
-from rest_framework import generics, serializers, parsers, response, status
+from rest_framework import generics, response, status
 
-from .serializers import DetectionSerializer, UploadSerializer
+from .serializers import DetectionSerializer
 from django.core.serializers import serialize, json
 from .models import Detection, BasicElasticStructure
 
@@ -11,108 +11,58 @@ import math
 
 from datetime import datetime
 
+now = datetime.now()
+
 
 class UpdateDetectionView(generics.CreateAPIView):
-    queryset = Detection.objects.all()
-    serializer_class = DetectionSerializer
-
     def post(self, request, *args, **kwargs):
-
         es_structure = BasicElasticStructure.objects.get(
             identifier='detection')
-        self.now = datetime.now()
-        print(f'[{datetime.now() - self.now}] starting process: ')
-        print(f'[{datetime.now() - self.now}] serializing....')
+        print(f'[{datetime.now() - now}] starting process: ')
 
-        json_file = json.loads(request.FILES['file'].read())
-        serializer = DetectionSerializer(data=json_file['features'], many=True)
-        serializer.is_valid(raise_exception=True)
+        detection_series = UtilFunctions.serialize_detection_file(request)
 
-        # import pdb
-        # pdb.set_trace()
+        ClearDetectionStructure.delete(request)
 
-        print(f'[{datetime.now() - self.now}] Serialized!')
+        CreateDetectionStructure.put(request)
 
-        bulk_list = self.create_bulk_es(serializer.validated_data)
+        insert_errors = UtilFunctions.send_bulk_list(
+            detection_series, es_structure)
 
-        self.send_bulk_list(bulk_list, es_structure)
+        if (insert_errors):
+            return response.Response({'msg': 'Some data were not inserted', 'errors': insert_errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        return response.Response("{msg: OK}", status=status.HTTP_201_CREATED)
-
-    def create_bulk_es(self, data):
-        print(f'[{datetime.now() - self.now}] creating series....')
-        # pd_bulk_list = [Detection(**value).get_es_insertion_line()
-        #                 for value in data]
-
-        pd_detections = pd.Series(
-            [Detection(**value) for value in data])
-        pd_bulk_list = pd_detections.apply(
-            lambda x: x.get_es_insertion_line())
-
-        # import pdb
-        # pdb.set_trace()
-
-        print(f'[{datetime.now() - self.now}] series created!')
-        return pd_bulk_list
-
-    def send_bulk_list(self, bulk_list, es_structure):
-        print(f'[{datetime.now() - self.now}] preparing bulk list....')
-        # print(bulk_list)
-
-        bulk_size = int(es_structure.bulk_size_request) or 1
-
-        import pdb
-        pdb.set_trace()
-
-        chunks = math.ceil(bulk_list.size / bulk_size)
-
-        for chunk_id in list(range(chunks)):
-            lower_limiter = (chunk_id) * bulk_size
-            higher_limiter = (chunk_id + 1) * bulk_size
-
-            if higher_limiter >= bulk_list.size:
-                higher_limiter = bulk_list.size
-
-            print(
-                f'[{datetime.now() - self.now}] sending chunk {chunk_id + 1} ({lower_limiter + 1} to {higher_limiter} elements)....')
-
-            # print(
-            #     f'{bulk_list.iloc[lower_limiter:higher_limiter].to_string()} \n')
-
-            requests.post(
-                f'{es_structure.url}/{es_structure.es_identifier}/_bulk',
-                headers={"content-type": "application/json"},
-                data=f'{bulk_list.iloc[lower_limiter:higher_limiter].to_string()} \n'
-            )
-
-        print(f'[{datetime.now() - self.now}] Sent')
+        return response.Response({'msg': "Created"}, status=status.HTTP_201_CREATED)
 
 
 class ClearDetectionStructure(generics.DestroyAPIView):
-
     def delete(request, *args, **kwargs):
+        print(f'[{datetime.now() - now}] Clearing structure...')
         es_structure = BasicElasticStructure.objects.get(
             identifier='detection')
 
-        req = requests.delete(
-            f'{es_structure.url}/{es_structure.identifier}',
-        )
+        UtilFunctions.delete_es_structure(es_structure)
 
-        if req.status_code != 200 and req.status_code != 404:
-            raise ValueError(f'Elastic Search clearing procedure \
-                    returned error. Status code: {req.status_code} ${req.text}')
+        print(f'[{datetime.now() - now}] Clear!')
 
-        return True
-
-        # print("TODO")
+        return response.Response("Index removed", status=status.HTTP_200_OK)
 
 
 class CreateDetectionStructure(generics.UpdateAPIView):
-
     def put(request, *args, **kwargs):
+        print(f'[{datetime.now() - now}] Creating structure...')
         es_structure = BasicElasticStructure.objects.get(
             identifier='detection')
 
+        UtilFunctions.create_es_structure(es_structure)
+
+        print(f'[{datetime.now() - now}] Created!')
+
+        return response.Response("Structure created", status=status.HTTP_200_OK)
+
+
+class UtilFunctions:
+    def create_es_structure(es_structure):
         req = requests.put(
             f'{es_structure.url}/{es_structure.identifier}',
             headers={"content-type": "application/json"},
@@ -123,6 +73,71 @@ class CreateDetectionStructure(generics.UpdateAPIView):
             raise ValueError(f'Elastic Search clearing procedure \
                     returned error. Status code: {req.status_code} ${req.text}')
 
-        return True
+    def delete_es_structure(es_structure):
+        req = requests.delete(
+            f'{es_structure.url}/{es_structure.identifier}',
+        )
 
-        # print("TODO")
+        if req.status_code != 200 and req.status_code != 404:
+            raise ValueError(f'Elastic Search clearing procedure \
+                    returned error. Status code: {req.status_code} ${req.text}')
+
+    def serialize_detection_file(request):
+        print(f'[{datetime.now() - now}] serializing....')
+
+        json_file = json.loads(request.FILES['file'].read())
+        serializer = DetectionSerializer(data=json_file['features'], many=True)
+        serializer.is_valid(raise_exception=True)
+
+        print(f'[{datetime.now() - now}] Serialized!')
+
+        return UtilFunctions.create_detection_series(
+            serializer.validated_data)
+
+    def create_detection_series(data):
+        print(f'[{datetime.now() - now}] creating series....')
+
+        pd_detections = pd.Series(
+            [Detection(**value) for value in data])
+
+        print(f'[{datetime.now() - now}] series created!')
+        return pd_detections
+
+    def send_bulk_list(bulk_list, es_structure):
+        print(
+            f'[{datetime.now() - now}] preparing bulk list of size {bulk_list.size}....')
+
+        bulk_size = int(es_structure.bulk_size_request) or 1
+        insert_errors = []
+        chunks = math.ceil(bulk_list.size / bulk_size)
+
+        for chunk_id in list(range(chunks)):
+            lower_limiter = (chunk_id) * bulk_size
+            higher_limiter = (chunk_id + 1) * bulk_size
+
+            if higher_limiter >= len(bulk_list):
+                higher_limiter = len(bulk_list)
+
+            print(
+                f'[{datetime.now() - now}] sending chunk {chunk_id + 1} ({lower_limiter + 1} to {higher_limiter} elements)....')
+
+            body = [t.get_es_insertion_line()
+                    for t in bulk_list[lower_limiter:higher_limiter]]
+
+            req = requests.post(
+                f'{es_structure.url}/{es_structure.identifier}/_bulk',
+                headers={"content-type": "application/json"},
+                data="".join(body)
+            )
+
+            if req.status_code != 200:
+                raise ValueError(
+                    f'Elastic Search returned error inserting data. Status code: {req.status_code} ${req.text}')
+
+            if req.json()['errors']:
+                insert_errors.extend([{'error': i['create']['error']['reason'], 'caused': i['create']
+                                       ['error']['caused_by']} for i in req.json()['items'] if i['create']['status'] == 400])
+
+        print(f'[{datetime.now() - now}] Sent')
+
+        return insert_errors
