@@ -20,14 +20,14 @@ from .views import (UpdateDetectionView,
 
 urlpatterns = [
     # path('create', CreateES.as_view(), name='create-es-structure'),
-    path('delete-detection', ClearDetectionStructure.as_view(),
+    path('detection/delete', ClearDetectionStructure.as_view(),
          name='delete-detection'),
-    path('update-detection', UpdateDetectionView.as_view(), name='update-detection'),
-    path('create-detection', CreateDetectionStructure.as_view(),
+    path('detection/upload', UpdateDetectionView.as_view(), name='upload-detection'),
+    path('detection/create', CreateDetectionStructure.as_view(),
          name='create-detection'),
 
-    path('delete-soy', ClearDetectionStructure.as_view(), name='delete-detection'),
-    path('update-soy', UpdateDetectionView.as_view(), name='update-detection'),
-    path('create-soy', CreateDetectionStructure.as_view(), name='create-detection'),
+    # path('delete-soy', ClearDetectionStructure.as_view(), name='delete-detection'),
+    # path('update-soy', UpdateDetectionView.as_view(), name='update-detection'),
+    # path('create-soy', CreateDetectionStructure.as_view(), name='create-detection'),
 
 ]

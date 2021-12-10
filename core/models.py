@@ -41,9 +41,6 @@ class Detection(models.Model):
         fields = [self._format_data(f.get_attname(), getattr(self, f.get_attname())) for f in self._meta.get_fields(
         ) if f.get_attname() != '_id']
 
-        # import pdb
-        # pdb.set_trace()
-
         es_data_header = f'{{ "create": {{ "_id": "{self._id}"}}}}'
         es_data_line = ", ".join(fields)
 
@@ -53,43 +50,7 @@ class Detection(models.Model):
         if field == 'dt_cadastro':
             value = value.replace(tzinfo=None)
         elif field == 'geometry':
-            # import pdb
-            # pdb.set_trace()
             value = value.wkt
-
-        return f'"{field}": "{value}"'
-
-    class Meta:
-        managed = False
-
-
-class Soy(models.Model):
-    _id = models.IntegerField()
-
-    uf = models.CharField(max_length=2)
-
-    area_produtividade = models.FloatField()
-
-    area_plantada = models.FloatField()
-
-    dt_cadastro = models.DateTimeField()
-
-    def __str__(self):
-        return self.no_estagio
-
-    def get_es_insertion_line(self):
-
-        fields = [self._format_data(f.get_attname(), getattr(self, f.get_attname())) for f in self._meta.get_fields(
-        ) if f.get_attname() != '_id']
-
-        es_data_header = f'{{ "create": {{ "_id": "{self._id}"}}}}'
-        es_data_line = ", ".join(fields)
-
-        return f'{es_data_header}\n{{{es_data_line}}}\n'
-
-    def _format_data(self, field, value):
-        if field == 'dt_cadastro':
-            value = value.replace(tzinfo=None)
 
         return f'"{field}": "{value}"'
 
@@ -99,6 +60,7 @@ class Soy(models.Model):
 
 class BasicElasticStructure(models.Model):
     identifier = models.CharField(max_length=255)
+    index = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
     bulk_size_request = models.IntegerField(default=1000)
     structure = models.JSONField(encoder=json.DjangoJSONEncoder)
