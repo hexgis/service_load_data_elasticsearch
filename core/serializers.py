@@ -1,21 +1,12 @@
 from django.contrib.gis import geos
 from rest_framework_gis import serializers as gis_serializers
-from rest_framework import serializers
-from rest_framework.parsers import JSONParser, MultiPartParser
 
 from .models import Detection
 import json
 
 
-class UploadSerializer(serializers.Serializer):
-    file = serializers.FileField()
-    parser_classes = (MultiPartParser)
-
-    def create(self, validated_data):
-        return validated_data
-
-
 class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
+    """Serializer for Detection Model"""
     class Meta:
         model = Detection
         geo_field = 'geometry'
@@ -35,8 +26,15 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
             'dt_cadastro',
         )
 
-    def unformat_geojson(self, feature):
+    def unformat_geojson(self, feature: object) -> object:
+        """Method that formats features of uploaded geojson
 
+        Args:
+            feature (object): geojson feature uploaded for service
+
+        Returns:
+            object: attribute object to be serialized.
+        """
         attr = {
             '_id': feature['properties']['id'],
             'geometry': geos.GEOSGeometry(json.dumps(feature["geometry"])).wkt,

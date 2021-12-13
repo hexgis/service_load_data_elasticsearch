@@ -19,15 +19,9 @@ from .views import (UpdateDetectionView,
                     ClearDetectionStructure, CreateDetectionStructure)
 
 urlpatterns = [
-    # path('create', CreateES.as_view(), name='create-es-structure'),
     path('detection/delete', ClearDetectionStructure.as_view(),
          name='delete-detection'),
     path('detection/upload', UpdateDetectionView.as_view(), name='upload-detection'),
     path('detection/create', CreateDetectionStructure.as_view(),
          name='create-detection'),
-
-    # path('delete-soy', ClearDetectionStructure.as_view(), name='delete-detection'),
-    # path('update-soy', UpdateDetectionView.as_view(), name='update-detection'),
-    # path('create-soy', CreateDetectionStructure.as_view(), name='create-detection'),
-
 ]

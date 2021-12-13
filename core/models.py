@@ -5,6 +5,8 @@ from django.core.serializers import json
 
 
 class Detection(models.Model):
+    """Abstract object to deal with json file uploaded to service."""
+
     _id = models.IntegerField()
 
     tb_ciclo_monitoramento_id = models.IntegerField()
@@ -37,16 +39,37 @@ class Detection(models.Model):
         return self.no_estagio
 
     def get_es_insertion_line(self):
+        """Method for generating create string line for bulk
+        insertion into ElasticSearch server
 
-        fields = [self._format_data(f.get_attname(), getattr(self, f.get_attname())) for f in self._meta.get_fields(
-        ) if f.get_attname() != '_id']
+        Returns:
+            str: create line and data line separated with a new
+                line character
+        """
+
+        fields = [
+            self._format_data(
+                f.get_attname(),
+                getattr(self, f.get_attname())
+            ) for f in self._meta.get_fields() if f.get_attname() != '_id']
 
         es_data_header = f'{{ "create": {{ "_id": "{self._id}"}}}}'
         es_data_line = ", ".join(fields)
 
         return f'{es_data_header}\n{{{es_data_line}}}\n'
 
-    def _format_data(self, field, value):
+    def _format_data(self, field: str, value: object):
+        """Method for validating each specific field with each specific type
+        validation
+
+        Args:
+            field (str): field name for validation
+            value (object): value of the field to be validated
+
+        Returns:
+            str: returns field name and field value separated with a
+            colon character
+        """
         if field == 'dt_cadastro':
             value = value.replace(tzinfo=None)
         elif field == 'geometry':
@@ -59,6 +82,11 @@ class Detection(models.Model):
 
 
 class BasicElasticStructure(models.Model):
+    """Model for dealing with different ElasticSearch structures.
+
+    Stores in a sqlite database.
+    """
+
     identifier = models.CharField(max_length=255)
     index = models.CharField(max_length=255)
     url = models.CharField(max_length=255)

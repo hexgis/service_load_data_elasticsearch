@@ -21,10 +21,16 @@ class TestDetection(TestCase):
         self.upload_url = reverse('upload-detection')
         self.create_url = reverse('create-detection')
         self.delete_url = reverse('delete-detection')
-        self.json_data = json.loads(
-            open("core/tests/mockData.json").read()
-        )
         self.recipes = Recipes()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clear index test inside ElasticSearch server"""
+        recipes = Recipes()
+        recipes.es_object.make()
+        client = APIClient()
+        delete_url = reverse('delete-detection')
+        client.delete(delete_url)
 
     def test_upload_no_file(self):
         """Tests if no file is sent."""
@@ -45,59 +51,53 @@ class TestDetection(TestCase):
             'Unexpected sent json data', response.json()['msg'])
 
     def test_verify_if_file_is_serialized(self):
-        """Test data return by bulk function being a list."""
+        """Tests equality between serialized data and sent json file."""
         with open('core/tests/mockData.json') as json_file:
             js = json.loads(json_file.read())
             series = UtilFunctions.serialize_detection_file(js)
 
+        """Verifies if returned data is a Series type"""
         self.assertIsInstance(series, pd.Series)
 
+        """Verifies if returned data has same lenght as data sent"""
         self.assertEqual(series.size, len(js['features']))
 
+        """Verifies if returned data has same ids sent for serializing"""
+        id_feature_list = [f['properties']['id']
+                           for f in js['features']]
+
+        for element in series:
+            """Testing if all ids were sent to update."""
+            ids_inside_bulk_element = list(
+                filter(lambda id: id == element._id, id_feature_list))
+
+            self.assertTrue(ids_inside_bulk_element)
+
+        """Verifies if all fields inside ES Structure were serialized on the object"""
+        es_structure = self.recipes.es_object.make()
+        detection_structure = json.loads(
+            es_structure.structure)
+
+        for element in series:
+            """Testing if all fields appear in the bulk query."""
+            for f in detection_structure['mappings']['properties']:
+                element_fields = [i.get_attname()
+                                  for i in element._meta.get_fields()]
+                self.assertIn(f, element_fields)
+
     def test_clear_detection_structure(self):
+        """Tests if clear detection structure is safely deleted"""
         self.recipes.es_object.make()
         response = self.client.delete(self.delete_url)
         self.assertTrue(status.is_success(response.status_code))
 
     def test_create_detection_structure(self):
+        """Tests if clear detection structure is safely created"""
         self.recipes.es_object.make()
         response = self.client.put(self.create_url)
         self.assertTrue(status.is_success(response.status_code))
 
-    # def test_size_of_features_and_bulk(self):
-    #     """Test bulk list and and feature list have the same size."""
-    #     bulk_list = ElasticSearch._populate_es_bulk_request(
-    #         self.json_data['features'])
-
-    #     self.assertEqual(
-    #         len(self.json_data['features']), len(bulk_list))
-
-    # def test_id_creation(self):
-    #     """Test bulk list and and feature list have the same size."""
-    #     bulk_list = ElasticSearch._populate_es_bulk_request(
-    #         self.json_data['features'])
-
-    #     id_feature_list = [f['properties']['id']
-    #                        for f in self.json_data['features']]
-
-    #     for bulk_element in bulk_list:
-    #         """Testing if all ids were sent to update."""
-    #         ids_inside_bulk_element = list(filter(lambda id: str(
-    #             id) in bulk_element, id_feature_list))
-
-    #         self.assertTrue(ids_inside_bulk_element)
-
-    # def test_field_mapping(self):
-    #     """Test bulk list has all defined fields."""
-    #     bulk_list = ElasticSearch._populate_es_bulk_request(
-    #         self.json_data['features'])
-
-    #     for bulk_element in bulk_list:
-    #         """Testing if all fields appear in the bulk query."""
-    #         for f in ElasticSearch.list_of_fields:
-    #             self.assertIn(f, bulk_element)
-
-    # def test_file_structure_exists(self):
-    #     """Tests if ES file mapping structure exists."""
-    #     self.assertTrue(os.path.exists(
-    #         'elasticsearch/detection_structure.json'))
+    def test_fixture_file_exists(self):
+        """Tests if ES file mapping structure exists."""
+        self.assertTrue(os.path.exists(
+            'core/fixtures/es_structure.yaml'))

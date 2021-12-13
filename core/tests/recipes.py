@@ -3,6 +3,8 @@ from model_mommy.recipe import Recipe
 
 
 class Recipes:
+    """Mommy recipes used on test cases"""
+
     def __init__(self):
         self.es_object = Recipe(
             BasicElasticStructure,
