@@ -145,7 +145,8 @@ class UtilFunctions:
             json=json.loads(es_structure.structure)
         )
 
-        if req.status_code != status.HTTP_200_OK and req.status_code != status.HTTP_404_NOT_FOUND:
+        if req.status_code != status.HTTP_200_OK and \
+                req.status_code != status.HTTP_404_NOT_FOUND:
             raise ValueError(
                 f'Elastic Search clearing procedure returned error. \
                     Status code: {req.status_code} ${req.text}')
@@ -165,8 +166,8 @@ class UtilFunctions:
             parse.urljoin(es_structure.url, es_structure.index),
         )
 
-        if req.status_code != status.HTTP_200_OK and req.status_code != status.HTTP_404_NOT_FOUND:
-
+        if req.status_code != status.HTTP_200_OK and \
+                req.status_code != status.HTTP_404_NOT_FOUND:
             raise ValueError(f'Elastic Search clearing procedure \
                     returned error. Status code: {req.status_code} ${req.text}')
 
