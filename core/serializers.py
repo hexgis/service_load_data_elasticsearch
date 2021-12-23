@@ -40,7 +40,8 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
         attr = {
             '_id': feature['properties']['id'],
             'geometry': geos.GEOSGeometry(json.dumps(feature["geometry"])).wkt,
-            'tb_ciclo_monitoramento_id': feature['properties']['tb_ciclo_monitoramento_id'],
+            'tb_ciclo_monitoramento_id':
+                feature['properties']['tb_ciclo_monitoramento_id'],
             "no_estagio": feature["properties"]["no_estagio"],
             "no_imagem": feature["properties"]["no_imagem"],
             "sg_uf": feature["properties"]["sg_uf"],
@@ -51,7 +52,8 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
             "dt_t_zero": feature["properties"]["dt_t_zero"].replace('/', '-'),
             "dt_t_um": feature["properties"]["dt_t_um"].replace('/', '-'),
             "dt_imagem": feature["properties"]["dt_imagem"].replace('/', '-'),
-            "dt_cadastro": feature["properties"]["dt_cadastro"].replace('/', '-'),
+            "dt_cadastro":
+                feature["properties"]["dt_cadastro"].replace('/', '-'),
         }
 
         return attr

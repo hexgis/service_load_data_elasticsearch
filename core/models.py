@@ -35,6 +35,9 @@ class Detection(models.Model):
 
     geometry = models.GeometryField()
 
+    class Meta:
+        managed = False
+
     def __str__(self):
         return self.no_estagio
 
@@ -78,9 +81,6 @@ class Detection(models.Model):
 
         return f'"{field}": "{value}"'
 
-    class Meta:
-        managed = False
-
 
 class BasicElasticStructure(models.Model):
     """Model for dealing with different ElasticSearch structures.
@@ -93,3 +93,6 @@ class BasicElasticStructure(models.Model):
     url = models.CharField(max_length=255)
     bulk_size_request = models.IntegerField(default=1000)
     structure = models.JSONField(encoder=json.DjangoJSONEncoder)
+
+    def __str__(self):
+        return f'{self.identifier}'
