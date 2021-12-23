@@ -1,22 +1,19 @@
-from io import FileIO
-from json.decoder import JSONDecodeError
-from django.core.files.uploadedfile import UploadedFile
-
-from requests.models import Response
-from rest_framework import generics, response, status
-
-from .serializers import DetectionSerializer
-from django.core.serializers import serialize, json
-from .models import Detection, BasicElasticStructure
-
 import pandas as pd
 import json
 import requests
 import math
 
-from datetime import datetime
+from io import FileIO
+from json.decoder import JSONDecodeError
+from django.core.files.uploadedfile import UploadedFile
+from django.core.serializers import serialize
+from rest_framework import generics, response, status
+from requests.models import Response
+from urllib import parse
 
-now = datetime.now()
+from .serializers import DetectionSerializer
+from .models import Detection, BasicElasticStructure
+from datetime import datetime
 
 
 class UpdateDetectionView(generics.CreateAPIView):
@@ -25,6 +22,9 @@ class UpdateDetectionView(generics.CreateAPIView):
     Does the full upload process. Removing previos data, creating new
         structure and uploading all content into ElasticSearch Server.
     """
+
+    def __init__(self):
+        self.util_class = UtilFunctions()
 
     def post(self, request: object) -> Response:
         """Does the full process.
@@ -38,32 +38,41 @@ class UpdateDetectionView(generics.CreateAPIView):
         try:
             es_structure = BasicElasticStructure.objects.get(
                 identifier='Detection')
-            print(f'[{datetime.now() - now}] starting process: ')
+            print(f'[{datetime.now() - self.util_class.now}] starting process: ')
 
-            json_file = UtilFunctions.load_file(request.FILES['file'])
-            detection_series = UtilFunctions.serialize_detection_file(
-                json_file)
+            json_file = self.util_class.load_file(request.FILES['file'])
+            detection_series = self.util_class.serialize_detection_file(
+                json_file
+            )
 
             ClearDetectionStructure.delete(request)
 
             CreateDetectionStructure.put(request)
 
-            insert_errors = UtilFunctions.send_bulk_list(
+            insertion_errors = self.util_class.send_bulk_list(
                 detection_series, es_structure)
 
-            if (insert_errors):
-                return response.Response({'msg': 'Some data were not inserted', 'errors': insert_errors}, status=status.HTTP_400_BAD_REQUEST)
+            if (insertion_errors):
+                return response.Response({
+                    'msg': 'Some data were not inserted',
+                    'errors': insertion_errors
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            return response.Response({'msg': "Created"}, status=status.HTTP_201_CREATED)
+            return response.Response(
+                {'msg': "Created"}, status=status.HTTP_201_CREATED
+            )
         except Exception as exc:
             return response.Response({"msg": str(exc)}, status=404)
 
 
 class ClearDetectionStructure(generics.DestroyAPIView):
-    """Clear detection view"""
+    """Clear detection view."""
 
-    def delete(request: object) -> Response:
-        """Delete method for dealing with clear ES Structure
+    def __init__(self):
+        self.util_class = UtilFunctions()
+
+    def delete(self, request: object) -> Response:
+        """Delete method for dealing with clear ES Structure.
 
         Args:
             request (object): Request sent for delete url
@@ -71,21 +80,25 @@ class ClearDetectionStructure(generics.DestroyAPIView):
         Returns:
             Response: Response object
         """
-        print(f'[{datetime.now() - now}] Clearing structure...')
+        print(f'[{datetime.now() - self.util_class.now}] Clearing structure...')
         es_structure = BasicElasticStructure.objects.get(
             identifier='Detection')
 
-        UtilFunctions.delete_es_structure(es_structure)
+        self.util_class.delete_es_structure(es_structure)
 
-        print(f'[{datetime.now() - now}] Clear!')
+        print(f'[{datetime.now() - self.util_class.now}] Clear!')
 
         return response.Response("Index removed", status=status.HTTP_200_OK)
 
 
 class CreateDetectionStructure(generics.UpdateAPIView):
-    """Clear detection Structure from ES Server view"""
-    def put(request: object) -> Response:
-        """Put method for dealing with inserting a new ES Structure
+    """Clear detection Structure from ES Server view."""
+
+    def __init__(self):
+        self.util_class = UtilFunctions()
+
+    def put(self, request: object) -> Response:
+        """Put method for dealing with inserting a new ES Structure.
 
         Args:
             request (object): Request sent for put url
@@ -93,13 +106,13 @@ class CreateDetectionStructure(generics.UpdateAPIView):
         Returns:
             Response: Response Object
         """
-        print(f'[{datetime.now() - now}] Creating structure...')
+        print(f'[{datetime.now() - self.util_class.now}] Creating structure...')
         es_structure = BasicElasticStructure.objects.get(
             identifier='Detection')
 
-        UtilFunctions.create_es_structure(es_structure)
+        self.util_class.create_es_structure(es_structure)
 
-        print(f'[{datetime.now() - now}] Created!')
+        print(f'[{datetime.now() - self.util_class.now}] Created!')
 
         return response.Response("Structure created", status=status.HTTP_200_OK)
 
@@ -107,7 +120,10 @@ class CreateDetectionStructure(generics.UpdateAPIView):
 class UtilFunctions:
     """Util Class for generic code on dealing with ES data."""
 
-    def create_es_structure(es_structure: BasicElasticStructure):
+    """Variable for timing full process."""
+    now = datetime.now()
+
+    def create_es_structure(self, es_structure: BasicElasticStructure):
         """Method for sending a new mapping structure for ES Server.
 
         Args:
@@ -119,7 +135,7 @@ class UtilFunctions:
                 into ES Server.
         """
         req = requests.put(
-            f'{es_structure.url}/{es_structure.index}',
+            parse.urljoin(es_structure.url, es_structure.index),
             headers={"content-type": "application/json"},
             json=json.loads(es_structure.structure)
         )
@@ -129,9 +145,8 @@ class UtilFunctions:
                 f'Elastic Search clearing procedure returned error. \
                     Status code: {req.status_code} ${req.text}')
 
-    def delete_es_structure(es_structure: BasicElasticStructure):
-        """Method for deleting any existing structure for an specific
-            ElasticSearch Index
+    def delete_es_structure(self, es_structure: BasicElasticStructure):
+        """Method for deleting any ElasticSearch index structure.
 
         Args:
             es_structure (BasicElasticStructure): A BasicElasticStructure
@@ -142,15 +157,16 @@ class UtilFunctions:
             into ES Server
         """
         req = requests.delete(
-            f'{es_structure.url}/{es_structure.index}',
+            parse.urljoin(es_structure.url, es_structure.index),
         )
 
         if req.status_code != status.HTTP_200_OK and req.status_code != status.HTTP_404_NOT_FOUND:
+
             raise ValueError(f'Elastic Search clearing procedure \
                     returned error. Status code: {req.status_code} ${req.text}')
 
-    def serialize_detection_file(json_file: object) -> pd.Series:
-        """Method for serializing the uploaded json object into a Panda Series
+    def serialize_detection_file(self, json_file: object) -> pd.Series:
+        """Method for serializing the uploaded json object into a Panda Series.
 
         Args:
             json_file (object): The json loaded from the json file uploaded
@@ -161,20 +177,20 @@ class UtilFunctions:
         Returns:
            pd.Series : Returns a new Pandas Series to be dealt further
         """
-        print(f'[{datetime.now() - now}] serializing....')
+        print(f'[{datetime.now() - self.now}] serializing....')
         try:
             serializer = DetectionSerializer(
                 data=json_file['features'], many=True)
             serializer.is_valid(raise_exception=True)
 
-            print(f'[{datetime.now() - now}] Serialized!')
+            print(f'[{datetime.now() - self.now}] Serialized!')
 
-            return UtilFunctions._create_detection_series(
+            return self._create_detection_series(
                 serializer.validated_data)
         except Exception as exc:
             raise ValueError(f'Internal error: {str(exc)}')
 
-    def load_file(file: UploadedFile) -> object:
+    def load_file(self, file: UploadedFile) -> object:
         """Loads a uploaded json file into a json object.
 
         Args:
@@ -192,8 +208,8 @@ class UtilFunctions:
         except JSONDecodeError as json_error:
             raise ValueError(f'Unexpected sent json data')
 
-    def _create_detection_series(data: object) -> pd.Series:
-        """Creates a Panda Series with a serialized data
+    def _create_detection_series(self, data: object) -> pd.Series:
+        """Creates a Panda Series with a serialized data.
 
         Args:
             data (object): Serialized and validated Json data
@@ -201,15 +217,18 @@ class UtilFunctions:
         Returns:
             pd.Series: returns a Panda Series with all Detection Models
         """
-        print(f'[{datetime.now() - now}] creating series....')
+        print(f'[{datetime.now() - self.now}] creating series....')
 
         pd_detections = pd.Series(
             [Detection(**value) for value in data])
 
-        print(f'[{datetime.now() - now}] series created!')
+        print(f'[{datetime.now() - self.now}] series created!')
         return pd_detections
 
-    def send_bulk_list(bulk_list: pd.Series, es_structure: BasicElasticStructure) -> list:
+    def send_bulk_list(
+            self,
+            bulk_list: pd.Series,
+            es_structure: BasicElasticStructure) -> list:
         """Method for sending all Detections to a ElasticSearch Bulk request.
 
         Args:
@@ -224,10 +243,12 @@ class UtilFunctions:
             list : A list containing all insertion errors.
         """
         print(
-            f'[{datetime.now() - now}] preparing bulk list of size {bulk_list.size}....')
+            f'[{datetime.now() - self.now}] '
+            f'preparing bulk list of size {bulk_list.size}....'
+        )
 
         bulk_size = int(es_structure.bulk_size_request) or 1
-        insert_errors = []
+        insertion_errors = []
         chunks = math.ceil(bulk_list.size / bulk_size)
 
         for chunk_id in list(range(chunks)):
@@ -238,25 +259,35 @@ class UtilFunctions:
                 higher_limiter = len(bulk_list)
 
             print(
-                f'[{datetime.now() - now}] sending chunk {chunk_id + 1} ({lower_limiter + 1} to {higher_limiter} elements)....')
+                f'[{datetime.now() - self.now}] '
+                f'sending chunk {chunk_id + 1} ({lower_limiter + 1}'
+                f' to {higher_limiter} elements)....'
+            )
 
             body = [t.get_es_insertion_line()
                     for t in bulk_list[lower_limiter:higher_limiter]]
 
             req = requests.post(
-                f'{es_structure.url}/{es_structure.index}/_bulk',
+                parse.urljoin(es_structure.url, [es_structure.index, '_bulk']),
                 headers={"content-type": "application/json"},
                 data="".join(body)
             )
 
             if req.status_code != 200:
                 raise ValueError(
-                    f'Elastic Search returned error inserting data. Status code: {req.status_code} ${req.text}')
+                    f'Elastic Search returned error inserting data. '
+                    f'Status code: {req.status_code} ${req.text}'
+                )
 
             if req.json()['errors']:
-                insert_errors.extend([{'error': i['create']['error']['reason'], 'caused': i['create']
-                                       ['error']['caused_by']} for i in req.json()['items'] if i['create']['status'] == 400])
+                insertion_errors.extend([
+                    {
+                        'error': i['create']['error']['reason'],
+                        'caused': i['create']['error']['caused_by']
+                    } for i in req.json()['items']
+                    if i['create']['status'] == 400
+                ])
 
-        print(f'[{datetime.now() - now}] Sent')
+        print(f'[{datetime.now() - self.now}] Sent')
 
-        return insert_errors
+        return insertion_errors

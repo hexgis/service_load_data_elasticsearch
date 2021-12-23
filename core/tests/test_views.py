@@ -1,17 +1,15 @@
 import json
 import os
 import pandas as pd
-import yaml
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
-from .recipes import Recipes
 
-from core.views import UpdateDetectionView, UtilFunctions
-from core.serializers import DetectionSerializer
+from core.views import UtilFunctions
+from .recipes import Recipes
 
 
 class TestDetection(TestCase):
@@ -25,7 +23,7 @@ class TestDetection(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Clear index test inside ElasticSearch server"""
+        """Clear index test inside ElasticSearch server."""
         recipes = Recipes()
         recipes.es_object.make()
         client = APIClient()
@@ -38,7 +36,7 @@ class TestDetection(TestCase):
         self.assertTrue(status.is_client_error(response.status_code))
 
     def test_upload_error_file(self):
-        """Tests if an json file with error is sent."""
+        """Tests if an json file with error is sent and a error is returned."""
         self.recipes.es_object.make()
         response = {}
 
@@ -54,15 +52,16 @@ class TestDetection(TestCase):
         """Tests equality between serialized data and sent json file."""
         with open('core/tests/mockData.json') as json_file:
             js = json.loads(json_file.read())
-            series = UtilFunctions.serialize_detection_file(js)
+            util_class = UtilFunctions()
+            series = util_class.serialize_detection_file(js)
 
-        """Verifies if returned data is a Series type"""
+        """Verifies if returned data is a Series type."""
         self.assertIsInstance(series, pd.Series)
 
-        """Verifies if returned data has same lenght as data sent"""
+        """Verifies if returned data has same lenght as data sent."""
         self.assertEqual(series.size, len(js['features']))
 
-        """Verifies if returned data has same ids sent for serializing"""
+        """Verifies if returned data has same ids sent for serializing."""
         id_feature_list = [f['properties']['id']
                            for f in js['features']]
 
@@ -73,7 +72,8 @@ class TestDetection(TestCase):
 
             self.assertTrue(ids_inside_bulk_element)
 
-        """Verifies if all fields inside ES Structure were serialized on the object"""
+        """Verifies if all fields inside ES Structure were serialized on
+        the object."""
         es_structure = self.recipes.es_object.make()
         detection_structure = json.loads(
             es_structure.structure)
@@ -86,13 +86,13 @@ class TestDetection(TestCase):
                 self.assertIn(f, element_fields)
 
     def test_clear_detection_structure(self):
-        """Tests if clear detection structure is safely deleted"""
+        """Tests if clear detection structure is safely deleted."""
         self.recipes.es_object.make()
         response = self.client.delete(self.delete_url)
         self.assertTrue(status.is_success(response.status_code))
 
     def test_create_detection_structure(self):
-        """Tests if clear detection structure is safely created"""
+        """Tests if clear detection structure is safely created."""
         self.recipes.es_object.make()
         response = self.client.put(self.create_url)
         self.assertTrue(status.is_success(response.status_code))

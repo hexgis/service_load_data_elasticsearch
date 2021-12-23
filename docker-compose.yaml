@@ -12,18 +12,19 @@ services:
       - "http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Con\
         tent-Length,Authorization"
       - "http.cors.allow-credentials=true"
-
-    network_mode: "host"
     # ports:
     #   - "9200:9200"
     #   - "9300:9300"
 
   dev:
-    build: .
+    build: 
+      context: .
+      dockerfile: ./compose/docker/Dockerfile-dev
     command: >
-      bash -c " python manage.py makemigrations && python manage.py migrate
-      && python manage.py loaddata */fixtures/*.yaml && python manage.py
-      runserver 0.0.0.0:8080"
+      bash -c " python manage.py makemigrations 
+      && python manage.py migrate
+      && python manage.py loaddata */fixtures/*.yaml 
+      && python manage.py runserver 0.0.0.0:8080"
     environment:
       ELASTICSEARCH_URL: http://localhost:9200
       BULK_SIZE_REQUEST: 1000
@@ -34,9 +35,13 @@ services:
       - es
 
   test:
-    build: .
-    command: bash -c "export && python manage.py migrate && python manage.py test
-      core.tests.test_views.TestDetection"
+    build: 
+      context: .
+      dockerfile: ./compose/docker/Dockerfile
+    command: >
+      bash -c "export 
+      && python manage.py migrate 
+      && python manage.py test core.tests.test_views.TestDetection"
     volumes:
       - .:/home/app/
     environment:
@@ -45,25 +50,3 @@ services:
       DB_PASSWORD: testpassword
       DB_HOST: db
       ALLOWED_HOSTS: '["*"]'
-    depends_on:
-      - es
-  # prod:
-  #   image: service-load-data-elasticsearch
-  #   build: .
-  #   command: >
-  #     bash -c " python manage.py runserver 0.0.0.0:8080"
-  #   environment:
-  #     DB_NAME: test_db
-  #     DB_USER: test_user
-  #     DB_PASSWORD: test_pass
-  #     DB_HOST: db
-  #     DB_PORT: 5432
-  #     AUTH_TOKEN: Token secret
-  #     ELASTICSEARCH_URL: http://es:9200
-  #     BULK_SIZE_REQUEST: 1000
-  #     GOOGLE_APPLICATION_CREDENTIALS: /opt/google/key.json
-  #     GOOGLE_APPLICATION_CREDENTIALS_JSON: "{ Token }"
-  #   volumes:
-  #     - .:/app/
-  #   ports:
-  #     - 8080:8080

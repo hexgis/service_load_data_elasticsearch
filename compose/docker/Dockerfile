@@ -49,16 +49,12 @@ RUN pip install numpy
 RUN pip install gdal==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
 
 # Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --upgrade pip
+COPY ./requirements/ ./requirements/
+RUN pip install --no-cache-dir -r ./requirements/prod.txt
 
 # Copy local code to the container image.
 COPY . .
-
-# Entrypoint configuration
-# COPY ./entrypoint.sh /scripts/entrypoint.sh
-# RUN chmod +x /scripts/entrypoint.sh
-# ENTRYPOINT [ "/scripts/entrypoint.sh" ]
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.

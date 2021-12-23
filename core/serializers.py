@@ -1,12 +1,14 @@
+import json
+
 from django.contrib.gis import geos
 from rest_framework_gis import serializers as gis_serializers
 
 from .models import Detection
-import json
 
 
 class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
-    """Serializer for Detection Model"""
+    """Serializer for Detection Model."""
+
     class Meta:
         model = Detection
         geo_field = 'geometry'
@@ -27,7 +29,7 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
     def unformat_geojson(self, feature: object) -> object:
-        """Method that formats features of uploaded geojson
+        """Method that formats features of uploaded geojson.
 
         Args:
             feature (object): geojson feature uploaded for service

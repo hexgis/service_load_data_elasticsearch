@@ -39,8 +39,10 @@ class Detection(models.Model):
         return self.no_estagio
 
     def get_es_insertion_line(self):
-        """Method for generating create string line for bulk
-        insertion into ElasticSearch server
+        """Method for bulk line create string.
+
+        Generates the whole bulk line insertion into ElasticSearch server
+        for each feature inside json file.
 
         Returns:
             str: create line and data line separated with a new

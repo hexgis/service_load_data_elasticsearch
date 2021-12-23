@@ -1,4 +1,3 @@
-#!/bin/bash
 set -e
 
 if [ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" ]
