@@ -38,7 +38,6 @@ class TestDetection(TestCase):
     def test_upload_error_file(self):
         """Tests if an json file with error is sent and a error is returned."""
         self.recipes.es_object.make()
-        response = {}
 
         with open('core/tests/mockDataWithError.json') as file:
             response = self.client.post(self.upload_url, {'file': file})
