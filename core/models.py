@@ -94,5 +94,8 @@ class BasicElasticStructure(models.Model):
     bulk_size_request = models.IntegerField(default=1000)
     structure = models.JSONField(encoder=json.DjangoJSONEncoder)
 
+    class Meta:
+        ordering = ['url', 'identifier']
+
     def __str__(self):
         return f'{self.identifier}'
