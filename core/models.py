@@ -61,8 +61,7 @@ class Detection(models.Model):
         return f'{es_data_header}\n{{{es_data_line}}}\n'
 
     def _format_data(self, field: str, value: object):
-        """Method for validating each specific field with each specific type
-        validation
+        """Method for validating each field with each type validation.
 
         Args:
             field (str): field name for validation

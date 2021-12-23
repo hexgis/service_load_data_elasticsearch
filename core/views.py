@@ -10,10 +10,10 @@ from django.core.serializers import serialize
 from rest_framework import generics, response, status
 from requests.models import Response
 from urllib import parse
+from datetime import datetime
 
 from .serializers import DetectionSerializer
 from .models import Detection, BasicElasticStructure
-from datetime import datetime
 
 
 class UpdateDetectionView(generics.CreateAPIView):
@@ -38,7 +38,8 @@ class UpdateDetectionView(generics.CreateAPIView):
         try:
             es_structure = BasicElasticStructure.objects.get(
                 identifier='Detection')
-            print(f'[{datetime.now() - self.util_class.now}] starting process: ')
+            print(f'[{datetime.now() - self.util_class.now}]'
+                  f' starting process: ')
 
             json_file = self.util_class.load_file(request.FILES['file'])
             detection_series = self.util_class.serialize_detection_file(
@@ -80,7 +81,8 @@ class ClearDetectionStructure(generics.DestroyAPIView):
         Returns:
             Response: Response object
         """
-        print(f'[{datetime.now() - self.util_class.now}] Clearing structure...')
+        print(f'[{datetime.now() - self.util_class.now}]'
+              f' Clearing structure...')
         es_structure = BasicElasticStructure.objects.get(
             identifier='Detection')
 
@@ -106,7 +108,8 @@ class CreateDetectionStructure(generics.UpdateAPIView):
         Returns:
             Response: Response Object
         """
-        print(f'[{datetime.now() - self.util_class.now}] Creating structure...')
+        print(f'[{datetime.now() - self.util_class.now}]'
+              f' Creating structure...')
         es_structure = BasicElasticStructure.objects.get(
             identifier='Detection')
 
@@ -114,7 +117,9 @@ class CreateDetectionStructure(generics.UpdateAPIView):
 
         print(f'[{datetime.now() - self.util_class.now}] Created!')
 
-        return response.Response("Structure created", status=status.HTTP_200_OK)
+        return response.Response(
+            "Structure created", status=status.HTTP_200_OK
+        )
 
 
 class UtilFunctions:
