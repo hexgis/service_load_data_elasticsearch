@@ -16,7 +16,7 @@
 # https://hub.docker.com/_/python
 FROM python:3.9-buster
 
-LABEL maintainer="Hexgis <contato@hexgis.com>"
+LABEL maintainer="Hexgis <contato@hex360.com.br>"
 
 ENV APP_HOME /app
 ENV PORT 8080
@@ -34,24 +34,22 @@ RUN apt-get update -y
 RUN apt-get install -y \
     build-essential \
     libgnutls28-dev \
-    python3-setuptools \
-    python3-pip \
-    python-dev \
-    python-pil \
+    python-pip \
     python-gdal \
-    libgdal-dev \
     gdal-bin \
-    dans-gdal-scripts \
+    libgdal-dev \
     google-cloud-sdk \
     && rm -rf /var/lib/apt/lists/*
 RUN pip uninstall gdal -y
 RUN pip install numpy
 RUN pip install gdal==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
 
-# Install dependencies
+# Upgrade pip dependencies
 RUN python -m pip install --upgrade pip
+
+# Copy and install package requirements
 COPY ./requirements/ ./requirements/
-RUN pip install --no-cache-dir -r ./requirements/prod.txt
+RUN pip install --no-cache-dir -r ./requirements/production.txt
 
 # Copy local code to the container image.
 COPY . .
