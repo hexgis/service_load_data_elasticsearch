@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+import json
+import distutils.util
 from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +24,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k%9k%h4e0l9u&quu*)w9&-uce6fr#8jp@b113l=^jj^!+#82oy'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-k%9k%h4e0l9u&quu*)w9&-uce6fr#8jp@b113l=^jj^!+#82oy'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(distutils.util.strtobool(os.getenv('DEBUG', 'True')))
 
-ALLOWED_HOSTS = []
-
+# Django ALLOWED_HOSTS
+ALLOWED_HOSTS = json.loads(os.getenv("ALLOWED_HOSTS", '["*"]'))
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -138,5 +143,31 @@ REST_FRAMEWORK = {
     ]
 }
 
+# Django Logging
+# https://docs.djangoproject.com/en/4.0/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
+    },
+}
+
+# Elastic Search basic config
 BULK_SIZE_REQUEST = os.getenv("BULK_SIZE_REQUEST", 1000)
-ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL", "http://35.193.44.182:9200")
+ELASTICSEARCH_URL = os.getenv(
+    "ELASTICSEARCH_URL", "http://es.xskylab.com:9200")
