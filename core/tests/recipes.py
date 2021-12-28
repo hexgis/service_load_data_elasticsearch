@@ -1,4 +1,4 @@
-from core.models import BasicElasticStructure, Detection
+from core.models import BasicElasticStructure
 from model_mommy.recipe import Recipe
 
 
