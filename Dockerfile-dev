@@ -14,9 +14,7 @@
 
 # Use an official lightweight Python image.
 # https://hub.docker.com/_/python
-FROM python:3.9-buster
-
-LABEL maintainer="Hexgis <contato@hex360.com.br>"
+FROM python:3.9
 
 ENV APP_HOME /app
 ENV PORT 8080
@@ -24,39 +22,21 @@ WORKDIR $APP_HOME
 
 # Removes output stream buffering, allowing for more efficient logging
 ENV PYTHONUNBUFFERED 1
-ENV C_INCLUDE_PATH=/usr/include/gdal
-ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
-
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add -
 
 # Install system requirements
-RUN apt-get update -y
-RUN apt-get install -y \
-    build-essential \
-    libgnutls28-dev \
-    python-pip \
-    python-gdal \
-    gdal-bin \
-    libgdal-dev \
-    google-cloud-sdk \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt update -y
+RUN apt install gdal-bin libgdal-dev python-dev -y
 RUN pip uninstall gdal -y
 RUN pip install numpy
 RUN pip install gdal==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
 
-# Upgrade pip dependencies
-RUN python -m pip install --upgrade pip
-
-# Copy and install package requirements
-COPY ./requirements/ ./requirements/
-RUN pip install --no-cache-dir -r ./requirements/production.txt
-
-# Copy local code to the container image.
-COPY . .
+# Install dependencies
+COPY requirements.txt requirements-test.txt /requirements/
+RUN pip install --no-cache-dir -r /requirements/requirements-test.txt
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD python manage.py runserver 0.0.0.0:$PORT
+CMD python manage.py migrate && exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 service_load_data_elasticsearch.wsgi:application
