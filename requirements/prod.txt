@@ -1,4 +1,0 @@
--r base.txt
-
-google-cloud-storage==1.36.2
-model-mommy~=1.5.1
