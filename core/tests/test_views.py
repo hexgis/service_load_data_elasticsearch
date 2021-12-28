@@ -2,7 +2,6 @@ import json
 import os
 import pandas as pd
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -36,7 +35,9 @@ class TestDetection(TestCase):
         self.assertTrue(status.is_client_error(response.status_code))
 
     def test_upload_error_file(self):
-        """Tests if an json file with error is sent and a error is returned."""
+        """
+        Tests if an json file with error is sent and a error is returned.
+    """
         self.recipes.es_object.make()
 
         with open('core/tests/mockDataWithError.json') as file:
@@ -54,31 +55,31 @@ class TestDetection(TestCase):
             util_class = UtilFunctions()
             series = util_class.serialize_detection_file(js)
 
-        """Verifies if returned data is a Series type."""
+        # Verifies if returned data is a Series type.
         self.assertIsInstance(series, pd.Series)
 
-        """Verifies if returned data has same lenght as data sent."""
+        # Verifies if returned data has same lenght as data sent.
         self.assertEqual(series.size, len(js['features']))
 
-        """Verifies if returned data has same ids sent for serializing."""
+        # Verifies if returned data has same ids sent for serializing.
         id_feature_list = [f['properties']['id']
                            for f in js['features']]
 
         for element in series:
-            """Testing if all ids were sent to update."""
+            # Testing if all ids were sent to update.
             ids_inside_bulk_element = list(
                 filter(lambda id: id == element._id, id_feature_list))
 
             self.assertTrue(ids_inside_bulk_element)
 
-        """Verifies if all fields inside ES Structure were serialized on
-        the object."""
+        # Verifies if all fields inside ES Structure were serialized on
+        # the object.
         es_structure = self.recipes.es_object.make()
         detection_structure = json.loads(
             es_structure.structure)
 
         for element in series:
-            """Testing if all fields appear in the bulk query."""
+            # Testing if all fields appear in the bulk query.
             for f in detection_structure['mappings']['properties']:
                 element_fields = [i.get_attname()
                                   for i in element._meta.get_fields()]
