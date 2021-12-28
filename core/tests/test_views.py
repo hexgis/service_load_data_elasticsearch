@@ -12,21 +12,21 @@ from .recipes import Recipes
 
 
 class TestDetection(TestCase):
-    def setUp(self):
-        """Setp up test function."""
-        self.client = APIClient()
-        self.upload_url = reverse('upload-detection')
-        self.create_url = reverse('create-detection')
-        self.delete_url = reverse('delete-detection')
-        self.recipes = Recipes()
+    @classmethod
+    def setUpClass(cls):
+        """Clear index test inside ElasticSearch server."""
+        cls.client = APIClient()
+        cls.upload_url = reverse('core:upload-detection')
+        cls.create_url = reverse('core:create-detection')
+        cls.delete_url = reverse('core:delete-detection')
+        cls.recipes = Recipes()
+        cls.es_structure = cls.recipes.es_object.make()
 
     @classmethod
     def tearDownClass(cls):
         """Clear index test inside ElasticSearch server."""
-        recipes = Recipes()
-        recipes.es_object.make()
         client = APIClient()
-        delete_url = reverse('delete-detection')
+        delete_url = reverse('core:delete-detection')
         client.delete(delete_url)
 
     def test_upload_no_file(self):
@@ -37,8 +37,7 @@ class TestDetection(TestCase):
     def test_upload_error_file(self):
         """
         Tests if an json file with error is sent and a error is returned.
-    """
-        self.recipes.es_object.make()
+        """
 
         with open('core/tests/mockDataWithError.json') as file:
             response = self.client.post(self.upload_url, {'file': file})
@@ -74,9 +73,8 @@ class TestDetection(TestCase):
 
         # Verifies if all fields inside ES Structure were serialized on
         # the object.
-        es_structure = self.recipes.es_object.make()
         detection_structure = json.loads(
-            es_structure.structure)
+            self.es_structure.structure)
 
         for element in series:
             # Testing if all fields appear in the bulk query.
@@ -87,13 +85,11 @@ class TestDetection(TestCase):
 
     def test_clear_detection_structure(self):
         """Tests if clear detection structure is safely deleted."""
-        self.recipes.es_object.make()
         response = self.client.delete(self.delete_url)
         self.assertTrue(status.is_success(response.status_code))
 
     def test_create_detection_structure(self):
         """Tests if clear detection structure is safely created."""
-        self.recipes.es_object.make()
         response = self.client.put(self.create_url)
         self.assertTrue(status.is_success(response.status_code))
 
