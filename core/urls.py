@@ -20,10 +20,10 @@ from .views import (
 )
 
 urlpatterns = [
-    path('detection/delete', ClearDetectionStructure.as_view(),
+    path('delete/', ClearDetectionStructure.as_view(),
          name='delete-detection'),
-    path('detection/upload', UpdateDetectionView.as_view(),
+    path('upload/', UpdateDetectionView.as_view(),
          name='upload-detection'),
-    path('detection/create', CreateDetectionStructure.as_view(),
+    path('create/', CreateDetectionStructure.as_view(),
          name='create-detection'),
 ]
