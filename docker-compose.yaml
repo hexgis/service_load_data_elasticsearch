@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    logging:
+      driver: none
+    environment:
+      - discovery.type=single-node
+      - "http.cors.allow-origin=*"
+      - "http.cors.enabled=true"
+      - "http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Con\
+        tent-Length,Authorization"
+      - "http.cors.allow-credentials=true"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  dev:
+    build: .
+    command: >
+      bash -c "python manage.py makemigrations && python manage.py migrate &&
+      python manage.py loaddata */fixtures/*.yaml && python manage.py runserver
+      0.0.0.0:8080"
+    environment:
+      BULK_SIZE_REQUEST: 1000
+      ELASTICSEARCH_URL: http://localhost:9200
+      DJANGO_SECRET_KEY: django-insecure-AKSI)_(SDLM@((!#JS<AMDOJM(*%@#!)WE
+      DJANGO_LOG_LEVEL: 'INFO'
+      DEBUG: 'true'
+      ALLOWED_HOSTS: '["*"]'
+    volumes:
+      - .:/app/
+    depends_on:
+      - es
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    command: >
+      bash -c "python manage.py makemigrations && python manage.py migrate &&
+      python manage.py test"
+    volumes:
+      - .:/app/
+    environment:
+      BULK_SIZE_REQUEST: 1000
+      ELASTICSEARCH_URL: http://es.xskylab.com:9200/
+      DJANGO_SECRET_KEY: django-insecure-AKSI)_(SDLM@((!#JS<AMDOJM(*%@#!)WE
+      DJANGO_LOG_LEVEL: 'INFO'
+      DEBUG: 'true'
+      ALLOWED_HOSTS: '["*"]'
+
+  prod:
+    image: us.gcr.io/custom-plating-209314/service_load_data_elasticsearch:latest
+    build: .
