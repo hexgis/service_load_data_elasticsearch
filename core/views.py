@@ -68,7 +68,7 @@ class UpdateDetectionView(generics.CreateAPIView):
             logger.warning(
                 f'[WARNING] Exception while uploading detection: {exc}')
             return response.Response(
-                {"msg": exc}, status=status.HTTP_404_NOT_FOUND
+                {"msg": str(exc)}, status=status.HTTP_404_NOT_FOUND
             )
 
 
