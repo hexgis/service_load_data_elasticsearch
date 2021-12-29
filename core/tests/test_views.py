@@ -43,7 +43,9 @@ class TestDetection(TestCase):
             response = self.client.post(self.upload_url, {'file': file})
 
         self.assertTrue(status.is_client_error(response.status_code))
-        self.assertEquals('Unexpected sent json data', response.json()['msg'])
+        self.assertEquals(
+            'Unexpected sent json data.', response.json()['msg']
+        )
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""

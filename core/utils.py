@@ -118,7 +118,7 @@ class UtilFunctions:
             file_content = file.read()
             return json.loads(file_content)
         except JSONDecodeError:
-            log = f'Unexpected sent json data'
+            log = f'Unexpected sent json data.'
             logger.warning(log)
             raise ValueError(log)
         except Exception:
