@@ -19,6 +19,7 @@ class TestDetection(TestCase):
         cls.upload_url = reverse('core:upload-detection')
         cls.create_url = reverse('core:create-detection')
         cls.delete_url = reverse('core:delete-detection')
+
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
 
@@ -43,9 +44,7 @@ class TestDetection(TestCase):
             response = self.client.post(self.upload_url, {'file': file})
 
         self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        self.assertTrue(
-            'Unexpected sent json data', response.json()['msg'])
+        self.assertTrue('Unexpected sent json data', response.json()['msg'])
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""
@@ -61,8 +60,7 @@ class TestDetection(TestCase):
         self.assertEqual(series.size, len(js['features']))
 
         # Verifies if returned data has same ids sent for serializing.
-        id_feature_list = [f['properties']['id']
-                           for f in js['features']]
+        id_feature_list = [f['properties']['id'] for f in js['features']]
 
         for element in series:
             # Testing if all ids were sent to update.
@@ -95,5 +93,4 @@ class TestDetection(TestCase):
 
     def test_fixture_file_exists(self):
         """Tests if ES file mapping structure exists."""
-        self.assertTrue(os.path.exists(
-            'core/fixtures/es_structure.yaml'))
+        self.assertTrue(os.path.exists('core/fixtures/es_structure.yaml'))
