@@ -42,4 +42,4 @@ COPY . .
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD python manage.py migrate && exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 service_load_data_elasticsearch.wsgi:application
+CMD python manage.py migrate && python manage.py loaddata es_structure.yaml && exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 service_load_data_elasticsearch.wsgi:application
