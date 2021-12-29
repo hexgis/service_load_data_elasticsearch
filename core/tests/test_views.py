@@ -27,9 +27,7 @@ class TestDetection(TestCase):
     @classmethod
     def tearDownClass(cls):
         """Clear index test inside ElasticSearch server."""
-        client = APIClient()
-        delete_url = reverse('core:delete-detection')
-        client.delete(delete_url)
+        cls.client.delete(cls.delete_url)
 
     def test_upload_no_file(self):
         """Tests if no file is sent."""
@@ -44,8 +42,8 @@ class TestDetection(TestCase):
         with open('core/tests/mockDataWithError.json') as file:
             response = self.client.post(self.upload_url, {'file': file})
 
-        self.assertTrue(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertTrue('Unexpected sent json data', response.json()['msg'])
+        self.assertTrue(status.is_client_error(response.status_code))
+        self.assertEquals('Unexpected sent json data', response.json()['msg'])
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""
@@ -72,8 +70,7 @@ class TestDetection(TestCase):
 
         # Verifies if all fields inside ES Structure were serialized on
         # the object.
-        detection_structure = json.loads(
-            self.es_structure.structure)
+        detection_structure = json.loads(self.es_structure.structure)
 
         for element in series:
             # Testing if all fields appear in the bulk query.
