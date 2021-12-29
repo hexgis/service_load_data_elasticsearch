@@ -122,7 +122,7 @@ class UtilFunctions:
             logger.warning(log)
             raise ValueError(log)
         except Exception:
-            log = f'[WARNING] File not found.'
+            log = f'File not found.'
             logger.warning(log)
             raise ValueError(log)
 
