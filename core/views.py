@@ -65,9 +65,11 @@ class UpdateDetectionView(generics.CreateAPIView):
                 response_data, status=status.HTTP_201_CREATED)
 
         except Exception as exc:
-            log = {"msg": str(exc)}
-            logger.warning(log)
-            return response.Response(log, status=404)
+            logger.warning(
+                f'[WARNING] Exception while uploading detection: {exc}')
+            return response.Response(
+                {"msg": exc}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class ClearDetectionStructure(generics.DestroyAPIView):
@@ -96,7 +98,9 @@ class ClearDetectionStructure(generics.DestroyAPIView):
 
         logger.info(f'[{datetime.now() - self.util_class.now}] Clear!')
 
-        return response.Response("Index removed", status=status.HTTP_200_OK)
+        return response.Response(
+            {"msg": "Index removed"}, status=status.HTTP_200_OK
+        )
 
 
 class CreateDetectionStructure(generics.UpdateAPIView):
@@ -126,5 +130,5 @@ class CreateDetectionStructure(generics.UpdateAPIView):
         logger.info(f'[{datetime.now() - self.util_class.now}] Created!')
 
         return response.Response(
-            "Structure created", status=status.HTTP_200_OK
+            {"msg": "Structure created"}, status=status.HTTP_200_OK
         )
