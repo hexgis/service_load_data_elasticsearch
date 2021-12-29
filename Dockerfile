@@ -26,6 +26,7 @@ ENV PYTHONUNBUFFERED 1
 # Install system requirements
 RUN apt update -y
 RUN apt install gdal-bin libgdal-dev python-dev -y
+RUN pip install --upgrade pip
 RUN pip uninstall gdal -y
 RUN pip install numpy
 RUN pip install gdal==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
@@ -42,4 +43,4 @@ COPY . .
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD python manage.py migrate && python manage.py loaddata es_structure.yaml && exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 service_load_data_elasticsearch.wsgi:application
+CMD python manage.py loaddata es_structure.yaml && exec gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 service_load_data_elasticsearch.wsgi:application
