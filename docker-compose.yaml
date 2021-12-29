@@ -17,7 +17,9 @@ services:
       - "9300:9300"
 
   dev:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
     command: >
       bash -c "python manage.py makemigrations && python manage.py migrate &&
       python manage.py loaddata */fixtures/*.yaml && python manage.py runserver
