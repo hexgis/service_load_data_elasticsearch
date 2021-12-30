@@ -16,16 +16,6 @@ steps:
       - push
       - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
 
-  - name: 'gcr.io/google-appengine/exec-wrapper'
-    id: 'Apply migrations'
-    args:
-      - '-i'
-      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
-      - '--'
-      - 'python'
-      - 'manage.py'
-      - 'migrate'
-
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     id: Deploy
     args:
