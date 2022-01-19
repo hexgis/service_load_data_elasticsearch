@@ -40,7 +40,7 @@ class UtilFunctions:
             parse.urljoin(es_structure.url, es_structure.index),
             headers={"content-type": "application/json"},
             json=json.loads(es_structure.structure),
-            verify=False
+            verify=True
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -65,7 +65,7 @@ class UtilFunctions:
         """
         req = requests.delete(
             parse.urljoin(es_structure.url, es_structure.index),
-            verify=False
+            verify=True
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -195,7 +195,7 @@ class UtilFunctions:
                     es_structure.url, ''.join([es_structure.index, '/_bulk'])),
                 headers={"content-type": "application/json"},
                 data="".join(body),
-                verify=False
+                verify=True
             )
 
             if req.status_code != 200:
