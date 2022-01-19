@@ -171,3 +171,7 @@ LOGGING = {
 BULK_SIZE_REQUEST = os.getenv("BULK_SIZE_REQUEST", 1000)
 ELASTICSEARCH_URL = os.getenv(
     "ELASTICSEARCH_URL", "http://es.xskylab.com:9200")
+
+# Increase max size for uploaded file
+# https://docs.djangoproject.com/en/3.2/ref/settings/#file-upload-max-memory-size
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2147483648
