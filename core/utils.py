@@ -3,6 +3,7 @@ import json
 import math
 import requests
 import pandas as pd
+import urllib3
 
 from datetime import datetime
 from urllib import parse
@@ -14,6 +15,7 @@ from rest_framework import status
 from .serializers import DetectionSerializer
 from .models import Detection, BasicElasticStructure
 
+urllib3.disable_warnings()
 
 logger = logging.getLogger('django')
 
@@ -37,7 +39,8 @@ class UtilFunctions:
         req = requests.put(
             parse.urljoin(es_structure.url, es_structure.index),
             headers={"content-type": "application/json"},
-            json=json.loads(es_structure.structure)
+            json=json.loads(es_structure.structure),
+            verify=True
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -62,6 +65,7 @@ class UtilFunctions:
         """
         req = requests.delete(
             parse.urljoin(es_structure.url, es_structure.index),
+            verify=True
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -188,9 +192,10 @@ class UtilFunctions:
 
             req = requests.post(
                 parse.urljoin(
-                    es_structure.url, [es_structure.index, '_bulk']),
+                    es_structure.url, ''.join([es_structure.index, '/_bulk'])),
                 headers={"content-type": "application/json"},
-                data="".join(body)
+                data="".join(body),
+                verify=True
             )
 
             if req.status_code != 200:

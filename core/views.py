@@ -45,8 +45,8 @@ class UpdateDetectionView(generics.CreateAPIView):
             detection_series = \
                 self.util_class.serialize_detection_file(json_file)
 
-            ClearDetectionStructure.delete(request)
-            CreateDetectionStructure.put(request)
+            ClearDetectionStructure().delete(request)
+            CreateDetectionStructure().put(request)
 
             insertion_errors = self.util_class.send_bulk_list(
                 detection_series, es_structure)
