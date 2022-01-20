@@ -4,6 +4,8 @@ import math
 import requests
 import pandas as pd
 import urllib3
+import homura
+import os
 
 from datetime import datetime
 from urllib import parse
@@ -11,6 +13,7 @@ from json.decoder import JSONDecodeError
 from requests.adapters import HTTPAdapter
 
 from django.core.files.uploadedfile import UploadedFile
+from django.conf import settings
 from rest_framework import status
 
 from .serializers import DetectionSerializer
@@ -50,7 +53,7 @@ class UtilFunctions:
             parse.urljoin(es_structure.url, es_structure.index),
             headers={"content-type": "application/json"},
             json=json.loads(es_structure.structure),
-            verify=False
+            verify=settings.VERIFY_SSL
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -75,7 +78,7 @@ class UtilFunctions:
         """
         req = self.session.delete(
             parse.urljoin(es_structure.url, es_structure.index),
-            verify=False
+            verify=settings.VERIFY_SSL
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -116,11 +119,11 @@ class UtilFunctions:
             logger.warning(log)
             raise ValueError(log)
 
-    def load_file(self, file: UploadedFile) -> object:
+    def load_file(self, file_url: str) -> object:
         """Loads a uploaded json file into a json object.
 
         Args:
-            file (UploadedFile): Uploaded Json File
+            file_url (str): url for file download
 
         Raises:
             ValueError: Raises error if its not possible to parse Json File
@@ -129,7 +132,7 @@ class UtilFunctions:
             object: Json Object parsed
         """
         try:
-            file_content = file.read()
+            file_content = self._download_file_from_url(file_url)
             return json.loads(file_content)
         except JSONDecodeError:
             log = f'Unexpected sent json data.'
@@ -139,6 +142,27 @@ class UtilFunctions:
             log = f'File not found.'
             logger.warning(log)
             raise ValueError(log)
+
+    def _download_file_from_url(self, file_url: str) -> object:
+        """Download file from a specific sent url
+
+        Args:
+            file_url (str): Url for downloading the file
+
+        Returns:
+            object: returns the read file.
+        """
+        try:
+            file_path = settings.JSON_TEMP_FILE
+
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                os.remove(file_path)
+
+            homura.download(file_url, file_path)
+            json_file = open(file_path, 'r+')
+            return json_file.read()
+        except Exception:
+            raise
 
     def _create_detection_series(self, data: object) -> pd.Series:
         """Creates a Panda Series with a serialized data.
@@ -205,7 +229,7 @@ class UtilFunctions:
                     es_structure.url, ''.join([es_structure.index, '/_bulk'])),
                 headers={"content-type": "application/json"},
                 data="".join(body),
-                verify=False
+                verify=settings.VERIFY_SSL
             )
 
             if req.status_code != 200:

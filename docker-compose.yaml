@@ -26,11 +26,12 @@ services:
       0.0.0.0:8080"
     environment:
       BULK_SIZE_REQUEST: 1000
-      ELASTICSEARCH_URL: http://localhost:9200
+      ELASTICSEARCH_URL: https://es.xskylab.com:9200/
       DJANGO_SECRET_KEY: django-insecure-AKSI)_(SDLM@((!#JS<AMDOJM(*%@#!)WE
       DJANGO_LOG_LEVEL: 'INFO'
       DEBUG: 'true'
       ALLOWED_HOSTS: '["*"]'
+      VERIFY_SSL: 'true'
     volumes:
       - .:/app/
     depends_on:

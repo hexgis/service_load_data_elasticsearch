@@ -40,7 +40,7 @@ class UpdateDetectionView(generics.CreateAPIView):
                 f'[{datetime.now() - self.util_class.now}]'
                 f' starting process: '
             )
-            json_file = self.util_class.load_file(request.FILES.get('file'))
+            json_file = self.util_class.load_file(request.data.get('file'))
 
             detection_series = \
                 self.util_class.serialize_detection_file(json_file)
