@@ -8,6 +8,7 @@ import urllib3
 from datetime import datetime
 from urllib import parse
 from json.decoder import JSONDecodeError
+from requests.adapters import HTTPAdapter
 
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status
@@ -25,6 +26,15 @@ class UtilFunctions:
 
     now = datetime.now()  # Timing full process.
 
+    # Creating session for retry attempts (dns error) and retry object.
+    session = requests.Session()
+    retry = urllib3.Retry(connect=10, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+
+    # Adding addapter to http/https requests sessions.
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
     def create_es_structure(self, es_structure: BasicElasticStructure):
         """Method for sending a new mapping structure for ES Server.
 
@@ -36,11 +46,11 @@ class UtilFunctions:
             ValueError: Raises error if cant insert the new structure
                 into ES Server.
         """
-        req = requests.put(
+        req = self.session.put(
             parse.urljoin(es_structure.url, es_structure.index),
             headers={"content-type": "application/json"},
             json=json.loads(es_structure.structure),
-            verify=True
+            verify=False
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -63,9 +73,9 @@ class UtilFunctions:
             ValueError: Raises error if cant delete previous structure loaded
             into ES Server
         """
-        req = requests.delete(
+        req = self.session.delete(
             parse.urljoin(es_structure.url, es_structure.index),
-            verify=True
+            verify=False
         )
 
         if req.status_code != status.HTTP_200_OK and \
@@ -190,12 +200,12 @@ class UtilFunctions:
             body = [t.get_es_insertion_line()
                     for t in bulk_list[lower_limiter:higher_limiter]]
 
-            req = requests.post(
+            req = self.session.post(
                 parse.urljoin(
                     es_structure.url, ''.join([es_structure.index, '/_bulk'])),
                 headers={"content-type": "application/json"},
                 data="".join(body),
-                verify=True
+                verify=False
             )
 
             if req.status_code != 200:
