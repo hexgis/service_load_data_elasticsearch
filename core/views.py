@@ -54,11 +54,11 @@ class UpdateDetectionView(generics.CreateAPIView):
             if insertion_errors:
                 response_data = {
                     'msg': 'Some data were not inserted',
-                    'errors': insertion_errors
+                    'errors': len(insertion_errors)
                 }
                 logger.warning(response_data)
                 return response.Response(
-                    response_data, status=status.HTTP_400_BAD_REQUEST)
+                    response_data, status=status.HTTP_201_CREATED)
 
             response_data = {'msg': "Created"}
             return response.Response(
