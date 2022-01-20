@@ -6,6 +6,7 @@ import pandas as pd
 import urllib3
 import homura
 import os
+import tempfile
 
 from datetime import datetime
 from urllib import parse
@@ -153,13 +154,10 @@ class UtilFunctions:
             object: returns the read file.
         """
         try:
-            file_path = settings.JSON_TEMP_FILE
+            temp_file = tempfile.NamedTemporaryFile(suffix='.geojson')
 
-            if os.path.exists(file_path) and os.path.isfile(file_path):
-                os.remove(file_path)
-
-            homura.download(file_url, file_path)
-            json_file = open(file_path, 'r+')
+            homura.download(file_url, temp_file.name)
+            json_file = open(temp_file.name, 'r+')
             return json_file.read()
         except Exception:
             raise

@@ -178,6 +178,3 @@ VERIFY_SSL = bool(distutils.util.strtobool(os.getenv("VERIFY_SSL", False)))
 # Increase max size for uploaded file
 # https://docs.djangoproject.com/en/3.2/ref/settings/#file-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2147483648
-
-# Json temp path
-JSON_TEMP_FILE = '/tmp/file.geojson'
