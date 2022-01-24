@@ -50,6 +50,8 @@ class Detection(models.Model):
                 line character
         """
 
+        self.id = self._id
+
         fields = [
             self._format_data(
                 f.get_attname(),
