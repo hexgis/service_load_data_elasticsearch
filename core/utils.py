@@ -241,6 +241,7 @@ class UtilFunctions:
             if req.json()['errors']:
                 insertion_errors.extend([
                     {
+                        'id': i['create']['_id'],
                         'error': i['create']['error']['reason'],
                         'caused': i['create']['error']['caused_by']
                     } for i in req.json()['items']

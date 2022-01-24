@@ -54,7 +54,8 @@ class UpdateDetectionView(generics.CreateAPIView):
             if insertion_errors:
                 response_data = {
                     'msg': 'Some data were not inserted',
-                    'errors': len(insertion_errors)
+                    'number_of_errors': len(insertion_errors),
+                    'errors': insertion_errors
                 }
                 logger.warning(response_data)
                 return response.Response(
