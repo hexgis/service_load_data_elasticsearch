@@ -1,6 +1,7 @@
+import json as Json
+
 from django.contrib.gis.db import models
 from django.core.serializers import json
-import json as Json
 
 
 class Detection(models.Model):
