@@ -40,7 +40,7 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
         return {
             '_id': feature['properties']['id'],
             'geometry':
-                geos.GEOSGeometry(json.dumps(feature["geometry"])).wkt,
+                geos.GEOSGeometry(json.dumps(feature["geometry"])).geojson,
             'tb_ciclo_monitoramento_id':
                 feature['properties']['tb_ciclo_monitoramento_id'],
             "no_estagio": feature["properties"]["no_estagio"],

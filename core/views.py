@@ -55,6 +55,7 @@ class UpdateDetectionView(generics.CreateAPIView):
                 response_data = {
                     'msg': 'Some data were not inserted',
                     'number_of_errors': len(insertion_errors),
+                    'errors_id_list': [error['id'] for error in insertion_errors],
                     'errors': insertion_errors
                 }
                 logger.warning(response_data)
