@@ -1,3 +1,5 @@
+import json as Json
+
 from django.contrib.gis.db import models
 from django.core.serializers import json
 
@@ -75,11 +77,13 @@ class Detection(models.Model):
             colon character
         """
         if field == 'dt_cadastro':
-            value = value.replace(tzinfo=None)
+            value = f'"{value.replace(tzinfo=None)}"'
         elif field == 'geometry':
-            value = value.wkt
+            value = value.geojson
+        else:
+            value = f'"{value}"'
 
-        return f'"{field}": "{value}"'
+        return f'"{field}": {value}'
 
 
 class BasicElasticStructure(models.Model):
