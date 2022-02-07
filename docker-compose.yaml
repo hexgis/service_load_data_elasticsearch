@@ -24,6 +24,7 @@ services:
       bash -c "python manage.py makemigrations && python manage.py migrate &&
       python manage.py loaddata */fixtures/*.yaml && python manage.py runserver
       0.0.0.0:8080"
+    network_mode: "host"
     environment:
       BULK_SIZE_REQUEST: 1000
       ELASTICSEARCH_URL: https://es.xskylab.com:9200/
@@ -34,8 +35,8 @@ services:
       VERIFY_SSL: 'true'
     volumes:
       - .:/app/
-    depends_on:
-      - es
+    # depends_on:
+    #   - es
 
   test:
     build:

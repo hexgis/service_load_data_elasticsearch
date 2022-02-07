@@ -16,5 +16,5 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    path('detection/', include(('core.urls', 'core'), namespace='core')),
+    path("detection/", include(("detection.urls", "detection"), namespace="detection")),
 ]

@@ -1,15 +1,14 @@
-
 import logging
 from datetime import datetime
 
 from requests.models import Response
 from rest_framework import generics, response, status
 
-from .models import BasicElasticStructure
-from .utils import UtilFunctions
+from elastic.models import Structure as ElasticStructure
+from elastic.utils import UtilFunctions
 
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class UpdateDetectionView(generics.CreateAPIView):
@@ -33,42 +32,39 @@ class UpdateDetectionView(generics.CreateAPIView):
         """
 
         try:
-            es_structure, _ = BasicElasticStructure.objects.get_or_create(
-                identifier='Detection')
+            es_structure, _ = ElasticStructure.objects.get_or_create(
+                identifier="Detection"
+            )
 
             logger.info(
-                f'[{datetime.now() - self.util_class.now}]'
-                f' starting process: '
+                f"[{datetime.now() - self.util_class.now}]" f" starting process: "
             )
-            json_file = self.util_class.load_file(request.data.get('file'))
+            json_file = self.util_class.load_detection_file(request.data.get("file"))
 
-            detection_series = \
-                self.util_class.serialize_detection_file(json_file)
+            detection_series = self.util_class.serialize_detection_file(json_file)
 
             ClearDetectionStructure().delete(request)
             CreateDetectionStructure().put(request)
 
             insertion_errors = self.util_class.send_bulk_list(
-                detection_series, es_structure)
+                detection_series, es_structure
+            )
 
             if insertion_errors:
                 response_data = {
-                    'msg': 'Some data were not inserted',
-                    'number_of_errors': len(insertion_errors),
-                    'errors_id_list': [error['id'] for error in insertion_errors],
-                    'errors': insertion_errors
+                    "msg": "Some data were not inserted",
+                    "number_of_errors": len(insertion_errors),
+                    "errors_id_list": [error["id"] for error in insertion_errors],
+                    "errors": insertion_errors,
                 }
                 logger.warning(response_data)
-                return response.Response(
-                    response_data, status=status.HTTP_201_CREATED)
+                return response.Response(response_data, status=status.HTTP_201_CREATED)
 
-            response_data = {'msg': "Created"}
-            return response.Response(
-                response_data, status=status.HTTP_201_CREATED)
+            response_data = {"msg": "Created"}
+            return response.Response(response_data, status=status.HTTP_201_CREATED)
 
         except Exception as exc:
-            logger.warning(
-                f'[WARNING] Exception while uploading detection: {exc}')
+            logger.warning(f"[WARNING] Exception while uploading detection: {exc}")
             return response.Response(
                 {"msg": str(exc)}, status=status.HTTP_404_NOT_FOUND
             )
@@ -90,19 +86,15 @@ class ClearDetectionStructure(generics.DestroyAPIView):
             Response: Response object
         """
         logger.info(
-            f'[{datetime.now() - self.util_class.now}]'
-            f' Clearing structure...'
+            f"[{datetime.now() - self.util_class.now}]" f" Clearing structure..."
         )
-        es_structure = BasicElasticStructure.objects.get(
-            identifier='Detection')
+        es_structure = ElasticStructure.objects.get(identifier="Detection")
 
         self.util_class.delete_es_structure(es_structure)
 
-        logger.info(f'[{datetime.now() - self.util_class.now}] Clear!')
+        logger.info(f"[{datetime.now() - self.util_class.now}] Clear!")
 
-        return response.Response(
-            {"msg": "Index removed"}, status=status.HTTP_200_OK
-        )
+        return response.Response({"msg": "Index removed"}, status=status.HTTP_200_OK)
 
 
 class CreateDetectionStructure(generics.UpdateAPIView):
@@ -121,15 +113,13 @@ class CreateDetectionStructure(generics.UpdateAPIView):
             Response: Response Object
         """
         logger.info(
-            f'[{datetime.now() - self.util_class.now}]'
-            f' Creating structure...'
+            f"[{datetime.now() - self.util_class.now}]" f" Creating structure..."
         )
-        es_structure = BasicElasticStructure.objects.get(
-            identifier='Detection')
+        es_structure = ElasticStructure.objects.get(identifier="Detection")
 
         self.util_class.create_es_structure(es_structure)
 
-        logger.info(f'[{datetime.now() - self.util_class.now}] Created!')
+        logger.info(f"[{datetime.now() - self.util_class.now}] Created!")
 
         return response.Response(
             {"msg": "Structure created"}, status=status.HTTP_200_OK

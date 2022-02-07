@@ -17,12 +17,13 @@ from django.core.files.uploadedfile import UploadedFile
 from django.conf import settings
 from rest_framework import status
 
-from .serializers import DetectionSerializer
-from .models import Detection, BasicElasticStructure
+from detection.serializers import DetectionSerializer
+from detection.models import Detection
+from elastic.models import Structure as ElasticStructure
 
 urllib3.disable_warnings()
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class UtilFunctions:
@@ -36,14 +37,14 @@ class UtilFunctions:
     adapter = HTTPAdapter(max_retries=retry)
 
     # Adding addapter to http/https requests sessions.
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
 
-    def create_es_structure(self, es_structure: BasicElasticStructure):
+    def create_es_structure(self, es_structure: ElasticStructure):
         """Method for sending a new mapping structure for ES Server.
 
         Args:
-            es_structure (BasicElasticStructure): A BasicElasticStructure
+            es_structure (ElasticStructure): A ElasticStructure
                 containing all needed ES Data.
 
         Raises:
@@ -54,23 +55,25 @@ class UtilFunctions:
             parse.urljoin(es_structure.url, es_structure.index),
             headers={"content-type": "application/json"},
             json=json.loads(es_structure.structure),
-            verify=settings.VERIFY_SSL
+            verify=settings.VERIFY_SSL,
         )
 
-        if req.status_code != status.HTTP_200_OK and \
-           req.status_code != status.HTTP_404_NOT_FOUND:
+        if (
+            req.status_code != status.HTTP_200_OK
+            and req.status_code != status.HTTP_404_NOT_FOUND
+        ):
             log = (
-                f'Elastic Search clearing procedure returned error. '
-                f'Status code: {req.status_code} ${req.text}'
+                f"Elastic Search clearing procedure returned error. "
+                f"Status code: {req.status_code} ${req.text}"
             )
             logger.warning(log)
             raise ValueError(log)
 
-    def delete_es_structure(self, es_structure: BasicElasticStructure):
+    def delete_es_structure(self, es_structure: ElasticStructure):
         """Method for deleting any ElasticSearch index structure.
 
         Args:
-            es_structure (BasicElasticStructure): A BasicElasticStructure
+            es_structure (ElasticStructure): A ElasticStructure
                 containing all needed ES Data.
 
         Raises:
@@ -79,14 +82,16 @@ class UtilFunctions:
         """
         req = self.session.delete(
             parse.urljoin(es_structure.url, es_structure.index),
-            verify=settings.VERIFY_SSL
+            verify=settings.VERIFY_SSL,
         )
 
-        if req.status_code != status.HTTP_200_OK and \
-           req.status_code != status.HTTP_404_NOT_FOUND:
+        if (
+            req.status_code != status.HTTP_200_OK
+            and req.status_code != status.HTTP_404_NOT_FOUND
+        ):
             log = (
-                f'Elastic Search clearing procedure returned error.'
-                f'Status code: {req.status_code} ${req.text}'
+                f"Elastic Search clearing procedure returned error."
+                f"Status code: {req.status_code} ${req.text}"
             )
             logger.warning(log)
             raise ValueError(log)
@@ -105,22 +110,20 @@ class UtilFunctions:
         Returns:
            pd.Series : Returns a new Pandas Series to be dealt further
         """
-        logger.info(f'[{datetime.now() - self.now}] serializing....')
+        logger.info(f"[{datetime.now() - self.now}] serializing....")
         try:
-            serializer = DetectionSerializer(
-                data=json_file['features'], many=True)
+            serializer = DetectionSerializer(data=json_file["features"], many=True)
             serializer.is_valid(raise_exception=True)
 
-            logger.info(f'[{datetime.now() - self.now}] Serialized!')
+            logger.info(f"[{datetime.now() - self.now}] Serialized!")
 
-            return self._create_detection_series(
-                serializer.validated_data)
+            return self._create_detection_series(serializer.validated_data)
         except Exception as exc:
-            log = f'Internal error: {str(exc)}'
+            log = f"Internal error: {str(exc)}"
             logger.warning(log)
             raise ValueError(log)
 
-    def load_file(self, file_url: str) -> object:
+    def load_detection_file(self, file_url: str) -> object:
         """Loads a uploaded json file into a json object.
 
         Args:
@@ -133,18 +136,26 @@ class UtilFunctions:
             object: Json Object parsed
         """
         try:
-            file_content = self._download_file_from_url(file_url)
+            file_content = self._download_file_from_url(file_url, ".txt")
             return json.loads(file_content)
         except JSONDecodeError:
-            log = f'Unexpected sent json data.'
+            log = f"Unexpected sent json data."
             logger.warning(log)
             raise ValueError(log)
         except Exception:
-            log = f'File not found.'
+            log = f"File not found."
             logger.warning(log)
             raise ValueError(log)
 
-    def _download_file_from_url(self, file_url: str) -> object:
+    def load_soy_file(self, file_url: str) -> object:
+        try:
+            return self._download_file_from_url(file_url, ".geojson")
+        except Exception:
+            log = f"File not found."
+            logger.warning(log)
+            raise ValueError(log)
+
+    def _download_file_from_url(self, file_url: str, extension: str) -> object:
         """Download file from a specific sent url
 
         Args:
@@ -154,10 +165,10 @@ class UtilFunctions:
             object: returns the read file.
         """
         try:
-            temp_file = tempfile.NamedTemporaryFile(suffix='.geojson')
+            temp_file = tempfile.NamedTemporaryFile(suffix=extension)
 
             homura.download(file_url, temp_file.name)
-            json_file = open(temp_file.name, 'r+')
+            json_file = open(temp_file.name, "r+")
             return json_file.read()
         except Exception:
             raise
@@ -171,24 +182,21 @@ class UtilFunctions:
         Returns:
             pd.Series: returns a Panda Series with all Detection Models
         """
-        logger.info(f'[{datetime.now() - self.now}] creating series....')
+        logger.info(f"[{datetime.now() - self.now}] creating series....")
 
-        pd_detections = pd.Series(
-            [Detection(**value) for value in data])
+        pd_detections = pd.Series([Detection(**value) for value in data])
 
-        logger.info(f'[{datetime.now() - self.now}] series created!')
+        logger.info(f"[{datetime.now() - self.now}] series created!")
         return pd_detections
 
     def send_bulk_list(
-        self,
-        bulk_list: pd.Series,
-        es_structure: BasicElasticStructure
+        self, bulk_list: pd.Series, es_structure: ElasticStructure
     ) -> list:
         """Method for sending all Detections to a ElasticSearch Bulk request.
 
         Args:
             bulk_list (pd.Series): a Panda Series with all Detections
-            es_structure (BasicElasticStructure): a basic ElasticSearch
+            es_structure (ElasticStructure): a basic ElasticSearch
                 structure with all needed data.
 
         Raises:
@@ -198,8 +206,8 @@ class UtilFunctions:
             list : A list containing all insertion errors.
         """
         logger.info(
-            f'[{datetime.now() - self.now}] '
-            f'preparing bulk list of size {bulk_list.size}....'
+            f"[{datetime.now() - self.now}] "
+            f"preparing bulk list of size {bulk_list.size}...."
         )
 
         bulk_size = int(es_structure.bulk_size_request) or 1
@@ -214,39 +222,45 @@ class UtilFunctions:
                 higher_limiter = len(bulk_list)
 
             logger.info(
-                f'[{datetime.now() - self.now}] '
-                f'sending chunk {chunk_id + 1} ({lower_limiter + 1}'
-                f' to {higher_limiter} elements)....'
+                f"[{datetime.now() - self.now}] "
+                f"sending chunk {chunk_id + 1} ({lower_limiter + 1}"
+                f" to {higher_limiter} elements)...."
             )
 
-            body = [t.get_es_insertion_line()
-                    for t in bulk_list[lower_limiter:higher_limiter]]
+            body = [
+                t.get_es_insertion_line()
+                for t in bulk_list[lower_limiter:higher_limiter]
+            ]
 
             req = self.session.post(
                 parse.urljoin(
-                    es_structure.url, ''.join([es_structure.index, '/_bulk'])),
+                    es_structure.url, "".join([es_structure.index, "/_bulk"])
+                ),
                 headers={"content-type": "application/json"},
                 data="".join(body),
-                verify=settings.VERIFY_SSL
+                verify=settings.VERIFY_SSL,
             )
 
             if req.status_code != 200:
                 log = (
-                    f'Elastic Search returned error inserting data. '
-                    f'Status code: {req.status_code} ${req.text}'
+                    f"Elastic Search returned error inserting data. "
+                    f"Status code: {req.status_code} ${req.text}"
                 )
                 logging.warning(log)
                 raise ValueError(log)
 
-            if req.json()['errors']:
-                insertion_errors.extend([
-                    {
-                        'id': i['create']['_id'],
-                        'error': i['create']['error']['reason'],
-                        'caused': i['create']['error']['caused_by']
-                    } for i in req.json()['items']
-                    if i['create']['status'] == 400
-                ])
+            if req.json()["errors"]:
+                insertion_errors.extend(
+                    [
+                        {
+                            "id": i["create"]["_id"],
+                            "error": i["create"]["error"]["reason"],
+                            "caused": i["create"]["error"]["caused_by"],
+                        }
+                        for i in req.json()["items"]
+                        if i["create"]["status"] == 400
+                    ]
+                )
 
-        logger.info(f'[{datetime.now() - self.now}] Sent')
+        logger.info(f"[{datetime.now() - self.now}] Sent")
         return insertion_errors
