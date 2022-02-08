@@ -112,12 +112,23 @@ class UtilFunctions:
         """
         logger.info(f"[{datetime.now() - self.now}] serializing....")
         try:
-            serializer = DetectionSerializer(data=json_file["features"], many=True)
+            serializer = DetectionSerializer(
+                data=json_file["features"], many=True)
             serializer.is_valid(raise_exception=True)
 
             logger.info(f"[{datetime.now() - self.now}] Serialized!")
 
             return self._create_detection_series(serializer.validated_data)
+        except Exception as exc:
+            log = f"Internal error: {str(exc)}"
+            logger.warning(log)
+            raise ValueError(log)
+
+    def serialize_soy_file(self, text_array_file: list) -> pd.Series:
+        logger.info(f"[{datetime.now() - self.now}] serializing....")
+        try:
+            logger.info(f"[{datetime.now() - self.now}] Serialized!")
+            return self._create_soy_series(text_array_file)
         except Exception as exc:
             log = f"Internal error: {str(exc)}"
             logger.warning(log)
@@ -136,8 +147,8 @@ class UtilFunctions:
             object: Json Object parsed
         """
         try:
-            file_content = self._download_file_from_url(file_url, ".txt")
-            return json.loads(file_content)
+            file_content = self._download_file_from_url(file_url, ".geojson")
+            return json.loads(file_content.read())
         except JSONDecodeError:
             log = f"Unexpected sent json data."
             logger.warning(log)
@@ -149,7 +160,8 @@ class UtilFunctions:
 
     def load_soy_file(self, file_url: str) -> object:
         try:
-            return self._download_file_from_url(file_url, ".geojson")
+            text_file = self._download_file_from_url(file_url, ".txt")
+            return text_file.readlines()
         except Exception:
             log = f"File not found."
             logger.warning(log)
@@ -169,7 +181,7 @@ class UtilFunctions:
 
             homura.download(file_url, temp_file.name)
             json_file = open(temp_file.name, "r+")
-            return json_file.read()
+            return json_file
         except Exception:
             raise
 
@@ -188,6 +200,17 @@ class UtilFunctions:
 
         logger.info(f"[{datetime.now() - self.now}] series created!")
         return pd_detections
+
+    def _create_soy_series(self, data: object) -> pd.Series:
+        logger.info(f"[{datetime.now() - self.now}] creating series....")
+
+        index_list = [value for key, value in enumerate(data) if not key % 2]
+        value_list = [value for key, value in enumerate(data) if key % 2]
+
+        pd_soy = pd.Series([f'{i}{v}' for i, v in zip(index_list, value_list)])
+
+        logger.info(f"[{datetime.now() - self.now}] series created!")
+        return pd_soy
 
     def send_bulk_list(
         self, bulk_list: pd.Series, es_structure: ElasticStructure
@@ -213,7 +236,6 @@ class UtilFunctions:
         bulk_size = int(es_structure.bulk_size_request) or 1
         insertion_errors = []
         chunks = math.ceil(bulk_list.size / bulk_size)
-
         for chunk_id in list(range(chunks)):
             lower_limiter = (chunk_id) * bulk_size
             higher_limiter = (chunk_id + 1) * bulk_size
@@ -228,7 +250,7 @@ class UtilFunctions:
             )
 
             body = [
-                t.get_es_insertion_line()
+                self._get_bulk_string(t, es_structure)
                 for t in bulk_list[lower_limiter:higher_limiter]
             ]
 
@@ -264,3 +286,9 @@ class UtilFunctions:
 
         logger.info(f"[{datetime.now() - self.now}] Sent")
         return insertion_errors
+
+    def _get_bulk_string(self, ele: object, es_structure) -> str:
+        if es_structure.identifier is 'Detection':
+            return ele.get_es_insertion_line()
+
+        return ele

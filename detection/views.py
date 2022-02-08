@@ -60,8 +60,7 @@ class UpdateDetectionView(generics.CreateAPIView):
                 logger.warning(response_data)
                 return response.Response(response_data, status=status.HTTP_201_CREATED)
 
-            response_data = {"msg": "Created"}
-            return response.Response(response_data, status=status.HTTP_201_CREATED)
+            return response.Response({"msg": "Created"}, status=status.HTTP_201_CREATED)
 
         except Exception as exc:
             logger.warning(f"[WARNING] Exception while uploading detection: {exc}")
