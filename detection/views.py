@@ -33,15 +33,20 @@ class UpdateDetectionView(generics.CreateAPIView):
 
         try:
             es_structure, _ = ElasticStructure.objects.get_or_create(
-                identifier="Detection"
+                identifier='Detection'
             )
 
             logger.info(
-                f"[{datetime.now() - self.util_class.now}]" f" starting process: "
+                f'[{datetime.now() - self.util_class.now}]' 
+                f' starting process: '
             )
-            json_file = self.util_class.load_detection_file(request.data.get("file"))
+            json_file = self.util_class.load_detection_file(
+                request.data.get('file')
+            )
 
-            detection_series = self.util_class.serialize_detection_file(json_file)
+            detection_series = self.util_class.serialize_detection_file(
+                json_file
+            )
 
             ClearDetectionStructure().delete(request)
             CreateDetectionStructure().put(request)
@@ -52,20 +57,27 @@ class UpdateDetectionView(generics.CreateAPIView):
 
             if insertion_errors:
                 response_data = {
-                    "msg": "Some data were not inserted",
-                    "number_of_errors": len(insertion_errors),
-                    "errors_id_list": [error["id"] for error in insertion_errors],
-                    "errors": insertion_errors,
+                    'msg': 'Some data were not inserted',
+                    'number_of_errors': len(insertion_errors),
+                    'errors_id_list': 
+                        [error['id'] for error in insertion_errors],
+                    'errors': insertion_errors,
                 }
                 logger.warning(response_data)
-                return response.Response(response_data, status=status.HTTP_201_CREATED)
+                return response.Response(
+                    response_data, status=status.HTTP_201_CREATED
+                )
 
-            return response.Response({"msg": "Created"}, status=status.HTTP_201_CREATED)
+            return response.Response(
+                {'msg': 'Created'}, status=status.HTTP_201_CREATED
+            )
 
         except Exception as exc:
-            logger.warning(f"[WARNING] Exception while uploading detection: {exc}")
+            logger.warning(
+                f'[WARNING] Exception while uploading detection: {exc}'
+            )
             return response.Response(
-                {"msg": str(exc)}, status=status.HTTP_404_NOT_FOUND
+                {'msg': str(exc)}, status=status.HTTP_404_NOT_FOUND
             )
 
 
@@ -85,15 +97,18 @@ class ClearDetectionStructure(generics.DestroyAPIView):
             Response: Response object
         """
         logger.info(
-            f"[{datetime.now() - self.util_class.now}]" f" Clearing structure..."
+            f'[{datetime.now() - self.util_class.now}]' 
+            f' Clearing structure...'
         )
-        es_structure = ElasticStructure.objects.get(identifier="Detection")
+        es_structure = ElasticStructure.objects.get(identifier='Detection')
 
         self.util_class.delete_es_structure(es_structure)
 
-        logger.info(f"[{datetime.now() - self.util_class.now}] Clear!")
+        logger.info(f'[{datetime.now() - self.util_class.now}] Clear!')
 
-        return response.Response({"msg": "Index removed"}, status=status.HTTP_200_OK)
+        return response.Response(
+            {'msg': 'Index removed'}, status=status.HTTP_200_OK
+        )
 
 
 class CreateDetectionStructure(generics.UpdateAPIView):
@@ -112,14 +127,15 @@ class CreateDetectionStructure(generics.UpdateAPIView):
             Response: Response Object
         """
         logger.info(
-            f"[{datetime.now() - self.util_class.now}]" f" Creating structure..."
+            f'[{datetime.now() - self.util_class.now}]' 
+            f' Creating structure...'
         )
-        es_structure = ElasticStructure.objects.get(identifier="Detection")
+        es_structure = ElasticStructure.objects.get(identifier='Detection')
 
         self.util_class.create_es_structure(es_structure)
 
-        logger.info(f"[{datetime.now() - self.util_class.now}] Created!")
+        logger.info(f'[{datetime.now() - self.util_class.now}] Created!')
 
         return response.Response(
-            {"msg": "Structure created"}, status=status.HTTP_200_OK
+            {'msg': 'Structure created'}, status=status.HTTP_200_OK
         )

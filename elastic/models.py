@@ -15,7 +15,7 @@ class Structure(models.Model):
     structure = models.JSONField(encoder=json.DjangoJSONEncoder)
 
     class Meta:
-        ordering = ["url", "identifier"]
+        ordering = ['url', 'identifier']
 
     def __str__(self):
-        return f"{self.identifier}"
+        return f'{self.identifier}'

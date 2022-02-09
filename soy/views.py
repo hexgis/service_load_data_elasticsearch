@@ -8,7 +8,7 @@ from elastic.models import Structure as ElasticStructure
 from elastic.utils import UtilFunctions
 
 
-logger = logging.getLogger("django")
+logger = logging.getLogger('django')
 
 
 class UpdateSoyView(generics.CreateAPIView):
@@ -18,13 +18,14 @@ class UpdateSoyView(generics.CreateAPIView):
     def post(self, request: object) -> Response:
         try:
             es_structure, _ = ElasticStructure.objects.get_or_create(
-                identifier="Soy"
+                identifier='Soy'
             )
 
             logger.info(
-                f"[{datetime.now() - self.util_class.now}]" f" starting process: "
+                f'[{datetime.now() - self.util_class.now}]' 
+                f' starting process: '
             )
-            text_file = self.util_class.load_soy_file(request.data.get("file"))
+            text_file = self.util_class.load_soy_file(request.data.get('file'))
 
             soy_series = self.util_class.serialize_soy_file(text_file)
 
@@ -37,10 +38,10 @@ class UpdateSoyView(generics.CreateAPIView):
 
         except Exception as exc:
             return response.Response(
-                {"msg": str(exc)}, status=status.HTTP_404_NOT_FOUND
+                {'msg': str(exc)}, status=status.HTTP_404_NOT_FOUND
             )
 
-        return response.Response({"msg": "Created"}, status=status.HTTP_201_CREATED)
+        return response.Response({'msg': 'Created'}, status=status.HTTP_201_CREATED)
 
 
 class ClearSoyStructiore(generics.DestroyAPIView):
@@ -49,15 +50,16 @@ class ClearSoyStructiore(generics.DestroyAPIView):
 
     def delete(self, request: object) -> Response:
         logger.info(
-            f"[{datetime.now() - self.util_class.now}]" f" Clearing structure..."
+            f'[{datetime.now() - self.util_class.now}]' 
+            f' Clearing structure...'
         )
-        es_structure = ElasticStructure.objects.get(identifier="Soy")
+        es_structure = ElasticStructure.objects.get(identifier='Soy')
 
         self.util_class.delete_es_structure(es_structure)
 
-        logger.info(f"[{datetime.now() - self.util_class.now}] Clear!")
+        logger.info(f'[{datetime.now() - self.util_class.now}] Clear!')
 
-        return response.Response({"msg": "Index removed"}, status=status.HTTP_200_OK)
+        return response.Response({'msg': 'Index removed'}, status=status.HTTP_200_OK)
 
 
 class CreateSoyStructure(generics.UpdateAPIView):
@@ -66,14 +68,14 @@ class CreateSoyStructure(generics.UpdateAPIView):
 
     def put(self, request: object) -> Response:
         logger.info(
-            f"[{datetime.now() - self.util_class.now}]" f" Creating structure..."
+            f'[{datetime.now() - self.util_class.now}]' f' Creating structure...'
         )
-        es_structure = ElasticStructure.objects.get(identifier="Soy")
+        es_structure = ElasticStructure.objects.get(identifier='Soy')
 
         self.util_class.create_es_structure(es_structure)
 
-        logger.info(f"[{datetime.now() - self.util_class.now}] Created!")
+        logger.info(f'[{datetime.now() - self.util_class.now}] Created!')
 
         return response.Response(
-            {"msg": "Structure created"}, status=status.HTTP_200_OK
+            {'msg': 'Structure created'}, status=status.HTTP_200_OK
         )

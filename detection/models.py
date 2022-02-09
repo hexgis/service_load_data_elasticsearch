@@ -56,13 +56,13 @@ class Detection(models.Model):
         fields = [
             self._format_data(f.get_attname(), getattr(self, f.get_attname()))
             for f in self._meta.get_fields()
-            if f.get_attname() != "_id"
+            if f.get_attname() != '_id'
         ]
 
         es_data_header = f'{{ "create": {{ "_id": "{self._id}"}}}}'
         es_data_line = ", ".join(fields)
 
-        return f"{es_data_header}\n{{{es_data_line}}}\n"
+        return f'{es_data_header}\n{{{es_data_line}}}\n'
 
     def _format_data(self, field: str, value: object):
         """Method for validating each field with each type validation.
@@ -75,9 +75,9 @@ class Detection(models.Model):
             str: returns field name and field value separated with a
             colon character
         """
-        if field == "dt_cadastro":
+        if field == 'dt_cadastro':
             value = f'"{value.replace(tzinfo=None)}"'
-        elif field == "geometry":
+        elif field == 'geometry':
             value = value.geojson
         else:
             value = f'"{value}"'

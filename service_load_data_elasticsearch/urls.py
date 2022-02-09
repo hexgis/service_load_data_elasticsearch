@@ -16,6 +16,7 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    path("detection/", include(("detection.urls", "detection"), namespace="detection")),
-    path("soy/", include(("soy.urls", "soy"), namespace="soy")),
+    path('detection/', 
+         include(('detection.urls', 'detection'), namespace='detection')),
+    path('soy/', include(('soy.urls', 'soy'), namespace='soy')),
 ]
