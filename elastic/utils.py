@@ -336,7 +336,7 @@ class UtilFunctions:
         Returns:
             str: Returns the bulk line for that element
         """
-        if es_structure.identifier is 'Detection':
+        if es_structure.identifier == 'Detection':
             return ele.get_es_insertion_line()
 
         return ele
