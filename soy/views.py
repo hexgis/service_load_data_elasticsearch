@@ -1,12 +1,10 @@
 import logging
-from datetime import datetime
 
+from datetime import datetime
 from requests.models import Response
 from rest_framework import generics, response, status
 
-from elastic.models import Structure as ElasticStructure
-from elastic.utils import UtilFunctions
-
+from elastic import models, utils
 
 logger = logging.getLogger('django')
 
@@ -17,11 +15,14 @@ class UpdateSoyView(generics.CreateAPIView):
     Does the full upload process. Removing previos data, creating new
     structure and uploading all content into ElasticSearch Server.
     """
+
     def __init__(self):
-        self.util_class = UtilFunctions()
+        self.util_class = utils.UtilFunctions()
 
     def post(self, request: object) -> Response:
-        """Does the full process
+        """Post method that does the full process.
+
+        Includes delete, create and upload processes.
 
         Args:
             request (object): request sent to post url
@@ -30,12 +31,12 @@ class UpdateSoyView(generics.CreateAPIView):
             Response: Response object
         """
         try:
-            es_structure, _ = ElasticStructure.objects.get_or_create(
+            es_structure, _ = models.ElasticStructure.objects.get_or_create(
                 identifier='Soy'
             )
 
             logger.info(
-                f'[{datetime.now() - self.util_class.now}]' 
+                f'[{datetime.now() - self.util_class.now}]'
                 f' starting process: '
             )
             text_file = self.util_class.load_soy_file(request.data.get('file'))
@@ -53,7 +54,7 @@ class UpdateSoyView(generics.CreateAPIView):
                 response_data = {
                     'msg': 'Some data were not inserted',
                     'number_of_errors': len(insertion_errors),
-                    'errors_id_list': 
+                    'errors_id_list':
                         [error['id'] for error in insertion_errors],
                     'errors': insertion_errors,
                 }
@@ -72,9 +73,9 @@ class UpdateSoyView(generics.CreateAPIView):
 
 class ClearSoyStructiore(generics.DestroyAPIView):
     """Clear Soy Elastic Structure view"""
-    
+
     def __init__(self):
-        self.util_class = UtilFunctions()
+        self.util_class = utils.UtilFunctions()
 
     def delete(self, request: object) -> Response:
         """Delete method for dealing with ES Structure clearing
@@ -86,10 +87,10 @@ class ClearSoyStructiore(generics.DestroyAPIView):
             Response: Response object
         """
         logger.info(
-            f'[{datetime.now() - self.util_class.now}]' 
+            f'[{datetime.now() - self.util_class.now}]'
             f' Clearing structure...'
         )
-        es_structure = ElasticStructure.objects.get(identifier='Soy')
+        es_structure = models.ElasticStructure.objects.get(identifier='Soy')
 
         self.util_class.delete_es_structure(es_structure)
 
@@ -100,9 +101,9 @@ class ClearSoyStructiore(generics.DestroyAPIView):
 
 class CreateSoyStructure(generics.UpdateAPIView):
     """Create Soy Structure of ES Server view"""
-    
+
     def __init__(self):
-        self.util_class = UtilFunctions()
+        self.util_class = utils.UtilFunctions()
 
     def put(self, request: object) -> Response:
         """Put method for dealing with inserting a new ES Structure into
@@ -116,7 +117,7 @@ class CreateSoyStructure(generics.UpdateAPIView):
         logger.info(
             f'[{datetime.now() - self.util_class.now}]' f' Creating structure...'
         )
-        es_structure = ElasticStructure.objects.get(identifier='Soy')
+        es_structure = models.ElasticStructure.objects.get(identifier='Soy')
 
         self.util_class.create_es_structure(es_structure)
 

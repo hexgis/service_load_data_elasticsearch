@@ -174,4 +174,4 @@ ELASTICSEARCH_URL = os.getenv(
     'ELASTICSEARCH_URL', 'http://es.xskylab.com:9200')
 
 # Variable controlling SLL validation for es requests
-VERIFY_SSL = bool(distutils.util.strtobool(os.getenv('VERIFY_SSL', True)))
+VERIFY_SSL = bool(distutils.util.strtobool(os.getenv('VERIFY_SSL', 'true')))

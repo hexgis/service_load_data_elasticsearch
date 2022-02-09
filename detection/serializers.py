@@ -3,14 +3,14 @@ import json
 from django.contrib.gis import geos
 from rest_framework_gis import serializers as gis_serializers
 
-from .models import Detection
+from detection import models
 
 
 class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
     """Serializer for Detection Model."""
 
     class Meta:
-        model = Detection
+        model = models.Detection
         geo_field = 'geometry'
         fields = (
             '_id',

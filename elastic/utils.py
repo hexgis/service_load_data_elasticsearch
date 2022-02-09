@@ -5,7 +5,6 @@ import requests
 import pandas as pd
 import urllib3
 import homura
-import os
 import tempfile
 
 from datetime import datetime
@@ -13,7 +12,6 @@ from urllib import parse
 from json.decoder import JSONDecodeError
 from requests.adapters import HTTPAdapter
 
-from django.core.files.uploadedfile import UploadedFile
 from django.conf import settings
 from rest_framework import status
 
@@ -58,12 +56,10 @@ class UtilFunctions:
             verify=settings.VERIFY_SSL,
         )
 
-        if (
-            req.status_code != status.HTTP_200_OK
-            and req.status_code != status.HTTP_404_NOT_FOUND
-        ):
+        if req.status_code != status.HTTP_200_OK and \
+           req.status_code != status.HTTP_404_NOT_FOUND:
             log = (
-                f'Elastic Search clearing procedure returned error. '
+                f'Elastic Search clearing procedure returned error.\n'
                 f'Status code: {req.status_code} ${req.text}'
             )
             logger.warning(log)
@@ -85,12 +81,10 @@ class UtilFunctions:
             verify=settings.VERIFY_SSL,
         )
 
-        if (
-            req.status_code != status.HTTP_200_OK
-            and req.status_code != status.HTTP_404_NOT_FOUND
-        ):
+        if req.status_code != status.HTTP_200_OK and \
+           req.status_code != status.HTTP_404_NOT_FOUND:
             log = (
-                f'Elastic Search clearing procedure returned error.'
+                f'Elastic Search clearing procedure returned error.\n'
                 f'Status code: {req.status_code} ${req.text}'
             )
             logger.warning(log)
@@ -113,11 +107,10 @@ class UtilFunctions:
         logger.info(f'[{datetime.now() - self.now}] serializing....')
         try:
             serializer = DetectionSerializer(
-                data=json_file['features'], many=True)
+                data=json_file['features'], many=True
+            )
             serializer.is_valid(raise_exception=True)
-
             logger.info(f'[{datetime.now() - self.now}] Serialized!')
-
             return self._create_detection_series(serializer.validated_data)
         except Exception as exc:
             log = f'Internal error: {str(exc)}'
@@ -125,7 +118,7 @@ class UtilFunctions:
             raise ValueError(log)
 
     def serialize_soy_file(self, text_array_file: list) -> pd.Series:
-        """Method for serializing a read array file into a panda Series
+        """Method for serializing a read array file into a panda Series.
 
         It follows the same flow as detection, so when it gets more complex,
         it just needs some adjustments.
@@ -141,6 +134,7 @@ class UtilFunctions:
             pd.Series: A Panda Series with all bulk data needed for ES
         """
         logger.info(f'[{datetime.now() - self.now}] serializing....')
+
         try:
             logger.info(f'[{datetime.now() - self.now}] Serialized!')
             return self._create_soy_series(text_array_file)
@@ -174,7 +168,7 @@ class UtilFunctions:
             raise ValueError(log)
 
     def load_soy_file(self, file_url: str) -> list:
-        """Download soy file and loads it into memory
+        """Download soy file and loads it into memory.
 
         Args:
             file_url (str): Url string for downloading the file
@@ -194,7 +188,7 @@ class UtilFunctions:
             raise ValueError(log)
 
     def _download_file_from_url(self, file_url: str, extension: str) -> object:
-        """Download file from a specific sent url
+        """Download file from a specific sent url.
 
         Args:
             file_url (str): Url for downloading the file
@@ -248,7 +242,9 @@ class UtilFunctions:
         return pd_soy
 
     def send_bulk_list(
-        self, bulk_list: pd.Series, es_structure: ElasticStructure
+        self,
+        bulk_list: pd.Series,
+        es_structure: ElasticStructure
     ) -> list:
         """Method for sending all Detections to a ElasticSearch Bulk request.
 
@@ -271,6 +267,7 @@ class UtilFunctions:
         bulk_size = int(es_structure.bulk_size_request) or 1
         insertion_errors = []
         chunks = math.ceil(bulk_list.size / bulk_size)
+
         for chunk_id in list(range(chunks)):
             lower_limiter = (chunk_id) * bulk_size
             higher_limiter = (chunk_id + 1) * bulk_size
@@ -322,14 +319,14 @@ class UtilFunctions:
         logger.info(f'[{datetime.now() - self.now}] Sent')
         return insertion_errors
 
-    def _get_bulk_string(self, ele: object, es_structure) -> str:
+    def _get_bulk_string(self, element: object, es_structure) -> str:
         """Internal method for getting the bulk data. 
-        
+
         It separates between Soy and Detection since both file have
         a different structure
 
         Args:
-            ele (object): the element to get its bulk
+            element (object): the element to get its bulk
             es_structure ([type]): type of Structure we're dealing with
                 (Soy or Detection)
 
@@ -337,6 +334,6 @@ class UtilFunctions:
             str: Returns the bulk line for that element
         """
         if es_structure.identifier == 'Detection':
-            return ele.get_es_insertion_line()
+            return element.get_es_insertion_line()
 
-        return ele
+        return element
