@@ -26,7 +26,7 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
             'nu_area_km2',
             'nu_area_ha',
             'latitude',
-            'longitude'
+            'longitude',
             'dt_cadastro',
         )
 

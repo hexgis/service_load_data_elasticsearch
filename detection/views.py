@@ -4,7 +4,8 @@ from datetime import datetime
 from requests.models import Response
 from rest_framework import generics, response, status
 
-from elastic import models, utils
+from elastic import models
+from detection import utils
 
 
 logger = logging.getLogger('django')
@@ -18,7 +19,7 @@ class UpdateDetectionView(generics.CreateAPIView):
     """
 
     def __init__(self):
-        self.util_class = utils.UtilFunctions()
+        self.util_class = utils.Utils()
 
     def post(self, request: object) -> Response:
         """Post method that does the full process.
@@ -33,7 +34,7 @@ class UpdateDetectionView(generics.CreateAPIView):
         """
 
         try:
-            es_structure, _ = models.ElasticStructure.objects.get_or_create(
+            es_structure, _ = models.Structure.objects.get_or_create(
                 identifier='Detection'
             )
 
@@ -87,7 +88,7 @@ class ClearDetectionStructure(generics.DestroyAPIView):
     """Clear detection view."""
 
     def __init__(self):
-        self.util_class = utils.UtilFunctions()
+        self.util_class = utils.Utils()
 
     def delete(self, request: object) -> Response:
         """Delete method for dealing with clear ES Structure.
@@ -102,7 +103,7 @@ class ClearDetectionStructure(generics.DestroyAPIView):
             f'[{datetime.now() - self.util_class.now}]'
             f' Clearing structure...'
         )
-        es_structure = models.ElasticStructure.objects.get(
+        es_structure = models.Structure.objects.get(
             identifier='Detection')
 
         self.util_class.delete_es_structure(es_structure)
@@ -118,7 +119,7 @@ class CreateDetectionStructure(generics.UpdateAPIView):
     """Create detection Structure of ES Server view."""
 
     def __init__(self):
-        self.util_class = utils.UtilFunctions()
+        self.util_class = utils.Utils()
 
     def put(self, request: object) -> Response:
         """Put method for dealing with inserting a new ES Structure.
@@ -133,7 +134,7 @@ class CreateDetectionStructure(generics.UpdateAPIView):
             f'[{datetime.now() - self.util_class.now}]'
             f' Creating structure...'
         )
-        es_structure = models.ElasticStructure.objects.get(
+        es_structure = models.Structure.objects.get(
             identifier='Detection')
 
         self.util_class.create_es_structure(es_structure)
