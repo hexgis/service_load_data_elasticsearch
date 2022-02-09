@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(distutils.util.strtobool(os.getenv('DEBUG', 'True')))
+DEBUG = bool(distutils.util.strtobool(os.getenv('DEBUG', 'true')))
 
 # Django ALLOWED_HOSTS
 ALLOWED_HOSTS = json.loads(os.getenv('ALLOWED_HOSTS', '["*"]'))
