@@ -1,38 +1,58 @@
 import json as Json
 
 from django.contrib.gis.db import models
+from django.utils.translation import ugettext_lazy as _
 
 
 class Detection(models.Model):
     """Abstract object to deal with json file uploaded to service."""
 
-    _id = models.IntegerField()
+    _id = models.IntegerField(
+        _('elastic id')
+    )
 
-    tb_ciclo_monitoramento_id = models.IntegerField()
+    tb_ciclo_monitoramento_id = models.IntegerField(
+        _('Cycle monitoring table id')
+    )
 
-    sg_uf = models.CharField(max_length=2)
+    sg_uf = models.CharField(
+        _('State'),
+        max_length=2
+    )
 
-    no_estagio = models.CharField(max_length=255)
+    no_estagio = models.CharField(
+        _('Stage'),
+        max_length=255
+    )
 
-    no_imagem = models.CharField(max_length=255)
+    no_imagem = models.CharField(
+        _('Image name'),
+        max_length=255
+    )
 
-    dt_imagem = models.DateField()
+    dt_imagem = models.DateField(_('Date'))
 
-    nu_orbita = models.CharField(max_length=3)
+    nu_orbita = models.CharField(
+        _('Satellite Path'),
+        max_length=3
+    )
 
-    nu_ponto = models.CharField(max_length=3)
+    nu_ponto = models.CharField(
+        _('Satellite Row'),
+        max_length=3
+    )
 
-    dt_t_zero = models.DateField()
+    dt_t_zero = models.DateField(_('Date T0'))
 
-    dt_t_um = models.DateField()
+    dt_t_um = models.DateField(_('Date T1'))
 
-    nu_area_km2 = models.FloatField()
+    nu_area_km2 = models.FloatField(_('Area km²'))
 
-    nu_area_ha = models.FloatField()
+    nu_area_ha = models.FloatField(_('Area ha²'))
 
-    dt_cadastro = models.DateTimeField()
+    dt_cadastro = models.DateTimeField(_('Registered date'))
 
-    geometry = models.GeometryField()
+    geometry = models.GeometryField(_('Geometry'))
 
     class Meta:
         managed = False
@@ -54,9 +74,9 @@ class Detection(models.Model):
         self.id = self._id
 
         fields = [
-            self._format_data(f.get_attname(), getattr(self, f.get_attname()))
-            for f in self._meta.get_fields()
-            if f.get_attname() != '_id'
+            self._format_data(
+                f.get_attname(), getattr(self, f.get_attname())
+            ) for f in self._meta.get_fields() if f.get_attname() != '_id'
         ]
 
         es_data_header = f'{{ "create": {{ "_id": "{self._id}"}}}}'
