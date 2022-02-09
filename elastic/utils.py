@@ -125,6 +125,21 @@ class UtilFunctions:
             raise ValueError(log)
 
     def serialize_soy_file(self, text_array_file: list) -> pd.Series:
+        """Method for serializing a read array file into a panda Series
+
+        It follows the same flow as detection, so when it gets more complex,
+        it just needs some adjustments.
+
+        Args:
+            text_array_file (list): The read file as an array, 
+                each element as a line
+
+        Raises:
+            ValueError: Raises error if it encounters and error
+
+        Returns:
+            pd.Series: A Panda Series with all bulk data needed for ES
+        """
         logger.info(f'[{datetime.now() - self.now}] serializing....')
         try:
             logger.info(f'[{datetime.now() - self.now}] Serialized!')
@@ -158,7 +173,18 @@ class UtilFunctions:
             logger.warning(log)
             raise ValueError(log)
 
-    def load_soy_file(self, file_url: str) -> object:
+    def load_soy_file(self, file_url: str) -> list:
+        """Download soy file and loads it into memory
+
+        Args:
+            file_url (str): Url string for downloading the file
+
+        Raises:
+            ValueError: Raises error if file is not found in the url
+
+        Returns:
+            object: Returns an list of all lines on the file
+        """
         try:
             text_file = self._download_file_from_url(file_url, '.txt')
             return text_file.readlines()
@@ -172,6 +198,7 @@ class UtilFunctions:
 
         Args:
             file_url (str): Url for downloading the file
+            extension (str): Type of extension for the file
 
         Returns:
             object: returns the read file.
@@ -202,6 +229,14 @@ class UtilFunctions:
         return pd_detections
 
     def _create_soy_series(self, data: object) -> pd.Series:
+        """Internal method for creating a Panda Series of Soy data.
+
+        Args:
+            data (object): The list of all the lines in the soy file
+
+        Returns:
+            pd.Series: A panda Series with all the bulk data, serialized
+        """
         logger.info(f'[{datetime.now() - self.now}] creating series....')
 
         index_list = [value for key, value in enumerate(data) if not key % 2]
@@ -288,6 +323,19 @@ class UtilFunctions:
         return insertion_errors
 
     def _get_bulk_string(self, ele: object, es_structure) -> str:
+        """Internal method for getting the bulk data. 
+        
+        It separates between Soy and Detection since both file have
+        a different structure
+
+        Args:
+            ele (object): the element to get its bulk
+            es_structure ([type]): type of Structure we're dealing with
+                (Soy or Detection)
+
+        Returns:
+            str: Returns the bulk line for that element
+        """
         if es_structure.identifier is 'Detection':
             return ele.get_es_insertion_line()
 

@@ -112,7 +112,7 @@ class ClearDetectionStructure(generics.DestroyAPIView):
 
 
 class CreateDetectionStructure(generics.UpdateAPIView):
-    """Clear detection Structure from ES Server view."""
+    """Create detection Structure of ES Server view."""
 
     def __init__(self):
         self.util_class = UtilFunctions()
