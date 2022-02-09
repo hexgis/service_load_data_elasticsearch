@@ -52,6 +52,10 @@ class Detection(models.Model):
 
     dt_cadastro = models.DateTimeField(_('Registered date'))
 
+    latitude = models.FloatField()
+
+    longitude = models.FloatField()
+
     geometry = models.GeometryField(_('Geometry'))
 
     class Meta:

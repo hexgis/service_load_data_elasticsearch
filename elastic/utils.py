@@ -15,9 +15,8 @@ from requests.adapters import HTTPAdapter
 from django.conf import settings
 from rest_framework import status
 
-from detection.serializers import DetectionSerializer
-from detection.models import Detection
-from elastic.models import Structure as ElasticStructure
+from detection import serializers, models
+from elastic import models as elastic_models
 
 urllib3.disable_warnings()
 
@@ -38,11 +37,11 @@ class UtilFunctions:
     session.mount('http://', adapter)
     session.mount('https://', adapter)
 
-    def create_es_structure(self, es_structure: ElasticStructure):
+    def create_es_structure(self, es_structure: elastic_models.Structure):
         """Method for sending a new mapping structure for ES Server.
 
         Args:
-            es_structure (ElasticStructure): A ElasticStructure
+            es_structure (elastic_models.Structure): A Elastic structure
                 containing all needed ES Data.
 
         Raises:
@@ -65,11 +64,11 @@ class UtilFunctions:
             logger.warning(log)
             raise ValueError(log)
 
-    def delete_es_structure(self, es_structure: ElasticStructure):
+    def delete_es_structure(self, es_structure: elastic_models.Structure):
         """Method for deleting any ElasticSearch index structure.
 
         Args:
-            es_structure (ElasticStructure): A ElasticStructure
+            es_structure (elastic_models.Structure): A Elastic structure
                 containing all needed ES Data.
 
         Raises:
@@ -106,7 +105,7 @@ class UtilFunctions:
         """
         logger.info(f'[{datetime.now() - self.now}] serializing....')
         try:
-            serializer = DetectionSerializer(
+            serializer = serializers.DetectionSerializer(
                 data=json_file['features'], many=True
             )
             serializer.is_valid(raise_exception=True)
@@ -124,7 +123,7 @@ class UtilFunctions:
         it just needs some adjustments.
 
         Args:
-            text_array_file (list): The read file as an array, 
+            text_array_file (list): The read file as an array,
                 each element as a line
 
         Raises:
@@ -217,7 +216,7 @@ class UtilFunctions:
         """
         logger.info(f'[{datetime.now() - self.now}] creating series....')
 
-        pd_detections = pd.Series([Detection(**value) for value in data])
+        pd_detections = pd.Series([models.Detection(**value) for value in data])
 
         logger.info(f'[{datetime.now() - self.now}] series created!')
         return pd_detections
@@ -244,13 +243,13 @@ class UtilFunctions:
     def send_bulk_list(
         self,
         bulk_list: pd.Series,
-        es_structure: ElasticStructure
+        es_structure: elastic_models.Structure
     ) -> list:
         """Method for sending all Detections to a ElasticSearch Bulk request.
 
         Args:
             bulk_list (pd.Series): a Panda Series with all Detections
-            es_structure (ElasticStructure): a basic ElasticSearch
+            es_structure (elastic_model.Structure): a basic ElasticSearch
                 structure with all needed data.
 
         Raises:
@@ -320,7 +319,7 @@ class UtilFunctions:
         return insertion_errors
 
     def _get_bulk_string(self, element: object, es_structure) -> str:
-        """Internal method for getting the bulk data. 
+        """Internal method for getting the bulk data.
 
         It separates between Soy and Detection since both file have
         a different structure

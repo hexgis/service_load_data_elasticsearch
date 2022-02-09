@@ -25,6 +25,8 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
             'dt_t_um',
             'nu_area_km2',
             'nu_area_ha',
+            'latitude',
+            'longitude'
             'dt_cadastro',
         )
 
@@ -39,6 +41,8 @@ class DetectionSerializer(gis_serializers.GeoFeatureModelSerializer):
         """
         return {
             '_id': feature['properties']['id'],
+            'latitude': feature['properties']['latitude'],
+            'longitude': feature['properties']['longitude'],
             'geometry':
                 geos.GEOSGeometry(json.dumps(feature['geometry'])).geojson,
             'tb_ciclo_monitoramento_id':
