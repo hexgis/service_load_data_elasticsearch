@@ -10,7 +10,7 @@ class Recipes:
             Structure,
             index="detection-test",
             identifier="Detection",
-            url="http://es.xskylab.com:9200",
+            url="https://es.xskylab.com:9200",
             bulk_size_request=1000,
             structure='{ "aliases":{}, "mappings":{'
             + '"properties":{ "id":{ "type":"keyword" }, '

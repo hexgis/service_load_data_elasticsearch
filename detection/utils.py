@@ -59,8 +59,8 @@ class Utils(utils.Utils):
             log = f'Unexpected sent json data.'
             logger.warning(log)
             raise ValueError(log)
-        except Exception:
-            log = f'File not found.'
+        except Exception as exc:
+            log = f'File not found. {str(exc)}'
             logger.warning(log)
             raise ValueError(log)
 

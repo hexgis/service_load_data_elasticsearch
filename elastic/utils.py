@@ -100,6 +100,9 @@ class Utils:
         try:
             temp_file = tempfile.NamedTemporaryFile(suffix=extension)
 
+            if (not file_url):
+                raise ValueError('No url file were sent')
+
             homura.download(file_url, temp_file.name)
             json_file = open(temp_file.name, 'r+')
             return json_file
