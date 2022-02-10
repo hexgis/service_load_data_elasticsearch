@@ -87,7 +87,6 @@ class Utils:
             logger.warning(log)
             raise ValueError(log)
 
-
     def _download_file_from_url(self, file_url: str, extension: str) -> object:
         """Download file from a specific sent url.
 
@@ -148,7 +147,7 @@ class Utils:
             )
 
             body = [
-                self._get_bulk_string(t)
+                self.__get_bulk_string(t)
                 for t in bulk_list[lower_limiter:higher_limiter]
             ]
 
@@ -185,9 +184,9 @@ class Utils:
         logger.info(f'[{datetime.now() - self.now}] Sent')
         return insertion_errors
 
-    def _get_bulk_string(self) -> str:
+    def __get_bulk_string(self) -> str:
         """Internal function to return, for each index, its bulk line
-        
+
         It needs an definition for each index app created on the service
 
         Returns:

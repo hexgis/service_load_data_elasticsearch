@@ -30,7 +30,7 @@ class Utils(utils.Utils):
 
         try:
             logger.info(f'[{datetime.now() - self.now}] Serialized!')
-            return self._create_soy_series(text_array_file)
+            return self.__create_soy_series(text_array_file)
         except Exception as exc:
             log = f'Internal error: {str(exc)}'
             logger.warning(log)
@@ -56,7 +56,7 @@ class Utils(utils.Utils):
             logger.warning(log)
             raise ValueError(log)
 
-    def _create_soy_series(self, data: object) -> pd.Series:
+    def __create_soy_series(self, data: object) -> pd.Series:
         """Internal method for creating a Panda Series of Soy data.
 
         Args:
@@ -75,7 +75,7 @@ class Utils(utils.Utils):
         logger.info(f'[{datetime.now() - self.now}] series created!')
         return pd_soy
 
-    def _get_bulk_string(self, element: object) -> str:
+    def __get_bulk_string(self, element: object) -> str:
         """Internal method for getting the bulk data.
 
         It separates between Soy and Detection since both file have

@@ -34,7 +34,7 @@ class Utils(utils.Utils):
             )
             serializer.is_valid(raise_exception=True)
             logger.info(f'[{datetime.now() - self.now}] Serialized!')
-            return self._create_detection_series(serializer.validated_data)
+            return self.__create_detection_series(serializer.validated_data)
         except Exception as exc:
             log = f'Internal error: {str(exc)}'
             logger.warning(log)
@@ -64,7 +64,7 @@ class Utils(utils.Utils):
             logger.warning(log)
             raise ValueError(log)
 
-    def _create_detection_series(self, data: object) -> pd.Series:
+    def __create_detection_series(self, data: object) -> pd.Series:
         """Creates a Panda Series with a serialized data.
 
         Args:
@@ -75,13 +75,13 @@ class Utils(utils.Utils):
         """
         logger.info(f'[{datetime.now() - self.now}] creating series....')
 
-        pd_detections = pd.Series([models.Detection(**value) for value in data])
+        pd_detections = pd.Series(
+            [models.Detection(**value) for value in data])
 
         logger.info(f'[{datetime.now() - self.now}] series created!')
         return pd_detections
 
-
-    def _get_bulk_string(self, element: object) -> str:
+    def __get_bulk_string(self, element: object) -> str:
         """Internal method for getting the bulk data.
 
         It separates between Soy and Detection since both file have
