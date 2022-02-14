@@ -4,6 +4,7 @@ import pandas as pd
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -21,6 +22,11 @@ class TestSoy(TestCase):
         cls.upload_url = reverse('soy:upload-soy')
         cls.create_url = reverse('soy:create-soy')
         cls.delete_url = reverse('soy:delete-soy')
+
+        cls.soy_error_file = os.path.join(
+            settings.SOY_TEST_URL, 'soy_test_error_file.geojson')
+        cls.soy_success_file = os.path.join(
+            settings.SOY_TEST_URL, 'soy_test_file.geojson')
 
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
@@ -42,13 +48,11 @@ class TestSoy(TestCase):
         """
         Tests if an json file with error is sent and a error is returned.
         """
+        response = self.client.post(
+            self.upload_url, {'file': self.soy_error_file})
 
-        # with open('detection/tests/mockDataWithError.json') as file:
-        # response = self.client.post(self.upload_url, {'file': file})
-        file = self.client.get('soy/tests/mockDataWithError.json')
-        # import pdb
-        # pdb.set_trace()
-        response = self.client.post(self.upload_url, {'file': file})
+        import pdb
+        pdb.set_trace()
 
         self.assertTrue(status.is_client_error(response.status_code))
         self.assertEquals(
@@ -57,10 +61,9 @@ class TestSoy(TestCase):
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""
-        with open('soy/tests/soy_test_file.geojson') as txt_file:
-            txt = txt_file.read()
-            util_class = utils.Utils()
-            series = util_class.serialize_soy_file(txt)
+        util_class = utils.Utils()
+        txt = util_class.load_soy_file(self.soy_success_file)
+        series = util_class.serialize_soy_file(txt)
 
         # Verifies if returned data is a Series type.
         self.assertIsInstance(series, pd.Series)

@@ -4,6 +4,7 @@ import pandas as pd
 
 from django.test import TestCase
 from django.urls import reverse
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -21,6 +22,11 @@ class TestDetection(TestCase):
         cls.upload_url = reverse('detection:upload-detection')
         cls.create_url = reverse('detection:create-detection')
         cls.delete_url = reverse('detection:delete-detection')
+
+        cls.detection_error_file = os.path.join(
+            settings.DETECTION_TEST_URL, 'detection_test_error_file.geojson')
+        cls.detection_success_file = os.path.join(
+            settings.DETECTION_TEST_URL, 'detection_test_file.geojson')
 
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
@@ -42,13 +48,8 @@ class TestDetection(TestCase):
         """
         Tests if an json file with error is sent and a error is returned.
         """
-
-        # with open('detection/tests/mockDataWithError.json') as file:
-        # response = self.client.post(self.upload_url, {'file': file})
-        file = self.client.get('detection/tests/mockDataWithError.json')
-        # import pdb
-        # pdb.set_trace()
-        response = self.client.post(self.upload_url, {'file': file})
+        response = self.client.post(
+            self.upload_url, {'file': self.detection_error_file})
 
         self.assertTrue(status.is_client_error(response.status_code))
         self.assertEquals(
@@ -57,10 +58,10 @@ class TestDetection(TestCase):
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""
-        with open('detection/tests/detection_test_file.geojson') as json_file:
-            js = json.loads(json_file.read())
-            util_class = utils.Utils()
-            series = util_class.serialize_detection_file(js)
+
+        util_class = utils.Utils()
+        js = util_class.load_detection_file(self.detection_success_file)
+        series = util_class.serialize_detection_file(js)
 
         # Verifies if returned data is a Series type.
         self.assertIsInstance(series, pd.Series)

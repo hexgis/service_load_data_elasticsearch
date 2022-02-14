@@ -175,3 +175,7 @@ ELASTICSEARCH_URL = os.getenv(
 
 # Variable controlling SLL validation for es requests
 VERIFY_SSL = bool(distutils.util.strtobool(os.getenv('VERIFY_SSL', 'true')))
+
+# Test only settings
+DETECTION_TEST_URL = os.getenv('DETECTION_TEST_URL', '')
+SOY_TEST_URL = os.getenv('SOY_TEST_URL', '')

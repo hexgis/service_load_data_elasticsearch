@@ -1,0 +1,6 @@
+{"index": {}}
+{"uf": "DF","ano": 1978,"area_produtividade": 296.43, "area_plantada": 5}
+{"index": {}}
+{"uf": "RS","ano": 1999,"area_produtividade": 148.48, "area_plantada": 40}
+{"index": {}}
+{"uf": "BA","ano": 1967,"area_produ

@@ -53,6 +53,8 @@ services:
       DJANGO_LOG_LEVEL: 'INFO'
       DEBUG: 'true'
       ALLOWED_HOSTS: '["*"]'
+      DETECTION_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/FUNAI/
+      SOY_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/SOY/
 
   prod:
     image: us.gcr.io/custom-plating-209314/service_load_data_elasticsearch:latest
