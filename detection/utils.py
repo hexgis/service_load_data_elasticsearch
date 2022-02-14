@@ -13,6 +13,39 @@ logger = logging.getLogger('django')
 
 
 class Utils(utils.Utils):
+    def __create_detection_series(self, data: object) -> pd.Series:
+        """Creates a Panda Series with a serialized data.
+
+        Args:
+            data (object): Serialized and validated Json data
+
+        Returns:
+            pd.Series: returns a Panda Series with all Detection Models
+        """
+        logger.info(f'[{datetime.now() - self.now}] creating series....')
+
+        pd_detections = pd.Series(
+            [models.Detection(**value) for value in data])
+
+        logger.info(f'[{datetime.now() - self.now}] series created!')
+        return pd_detections
+
+    def __get_bulk_string(self, element: object) -> str:
+        """Internal method for getting the bulk data.
+
+        It separates between Soy and Detection since both file have
+        a different structure
+
+        Args:
+            element (object): the element to get its bulk
+            es_structure ([type]): type of Structure we're dealing with
+                (Soy or Detection)
+
+        Returns:
+            str: Returns the bulk line for that element
+        """
+        return element.get_es_insertion_line()
+
     def serialize_detection_file(self, json_file: object) -> pd.Series:
         """Method for serializing the uploaded json object.
 
@@ -63,36 +96,3 @@ class Utils(utils.Utils):
             log = f'File not found. {str(exc)}'
             logger.warning(log)
             raise ValueError(log)
-
-    def __create_detection_series(self, data: object) -> pd.Series:
-        """Creates a Panda Series with a serialized data.
-
-        Args:
-            data (object): Serialized and validated Json data
-
-        Returns:
-            pd.Series: returns a Panda Series with all Detection Models
-        """
-        logger.info(f'[{datetime.now() - self.now}] creating series....')
-
-        pd_detections = pd.Series(
-            [models.Detection(**value) for value in data])
-
-        logger.info(f'[{datetime.now() - self.now}] series created!')
-        return pd_detections
-
-    def __get_bulk_string(self, element: object) -> str:
-        """Internal method for getting the bulk data.
-
-        It separates between Soy and Detection since both file have
-        a different structure
-
-        Args:
-            element (object): the element to get its bulk
-            es_structure ([type]): type of Structure we're dealing with
-                (Soy or Detection)
-
-        Returns:
-            str: Returns the bulk line for that element
-        """
-        return element.get_es_insertion_line()

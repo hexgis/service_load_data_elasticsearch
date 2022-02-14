@@ -24,9 +24,9 @@ class TestSoy(TestCase):
         cls.delete_url = reverse('soy:delete-soy')
 
         cls.soy_error_file = os.path.join(
-            settings.SOY_TEST_URL, 'soy_test_error_file.geojson')
+            settings.SOY_TEST_URL, 'soy_test_error_file.json')
         cls.soy_success_file = os.path.join(
-            settings.SOY_TEST_URL, 'soy_test_file.geojson')
+            settings.SOY_TEST_URL, 'soy_test_file.json')
 
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
@@ -51,12 +51,10 @@ class TestSoy(TestCase):
         response = self.client.post(
             self.upload_url, {'file': self.soy_error_file})
 
-        import pdb
-        pdb.set_trace()
-
         self.assertTrue(status.is_client_error(response.status_code))
         self.assertEquals(
-            'Unexpected sent json data.', response.json()['msg']
+            'Unexpected sent text data. File has not the expected structure.',
+            response.json()['msg']
         )
 
     def test_verify_if_file_is_serialized(self):
@@ -68,29 +66,8 @@ class TestSoy(TestCase):
         # Verifies if returned data is a Series type.
         self.assertIsInstance(series, pd.Series)
 
-        # # Verifies if returned data has same lenght as data sent.
-        # self.assertEqual(series.size, len(js['features']))
-
-        # # Verifies if returned data has same ids sent for serializing.
-        # id_feature_list = [f['properties']['id'] for f in js['features']]
-
-        # for element in series:
-        #     # Testing if all ids were sent to update.
-        #     ids_inside_bulk_element = list(
-        #         filter(lambda id: id == element._id, id_feature_list))
-
-        #     self.assertTrue(ids_inside_bulk_element)
-
-        # # Verifies if all fields inside ES Structure were serialized on
-        # # the object.
-        # detection_structure = json.loads(self.es_structure.structure)
-
-        # for element in series:
-        #     # Testing if all fields appear in the bulk query.
-        #     for f in detection_structure['mappings']['properties']:
-        #         element_fields = [i.get_attname()
-        #                           for i in element._meta.get_fields()]
-        #         self.assertIn(f, element_fields)
+        # Verifies if returned data has same lenght as data sent.
+        self.assertEqual(series.size, len(txt) / 2)
 
     def test_clear_detection_structure(self):
         """Tests if clear detection structure is safely deleted."""
