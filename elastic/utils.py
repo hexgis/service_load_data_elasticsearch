@@ -22,7 +22,7 @@ logger = logging.getLogger('django')
 
 
 class Utils:
-    """Util Class for generic code on dealing with ES data."""
+    """Util Class for Detection data on Elastic Search."""
 
     now = datetime.now()  # Timing full process.
 

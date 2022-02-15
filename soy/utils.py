@@ -11,6 +11,8 @@ logger = logging.getLogger('django')
 
 
 class Utils(utils.Utils):
+    """Util Class for Soy data on Elastic Search."""
+
     def __validate_soy_file(self, not_valid_file: list) -> None:
         """Internal function that validates soy file
 
@@ -76,10 +78,10 @@ class Utils(utils.Utils):
         logger.info(f'[{datetime.now() - self.now}] serializing....')
 
         try:
-            self.__validate_soy_file(text_array_file)            
+            self.__validate_soy_file(text_array_file)
             logger.info(f'[{datetime.now() - self.now}] Serialized!')
             return self.__create_soy_series(text_array_file)
-        
+
         except ValueError as val:
             log = f'Unexpected sent text data. {str(val)}'
             logger.warning(log)
