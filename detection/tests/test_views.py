@@ -27,6 +27,8 @@ class TestDetection(TestCase):
             settings.DETECTION_TEST_URL, 'detection_test_error_file.geojson')
         cls.detection_success_file = os.path.join(
             settings.DETECTION_TEST_URL, 'detection_test_file.geojson')
+        cls.detection_unexpected_file_url = os.path.join(
+            'http://fqfqasdf.ad.com/', 'tyjryj5.1r113ra')
 
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
@@ -55,6 +57,15 @@ class TestDetection(TestCase):
         self.assertEquals(
             'Unexpected sent json data.', response.json()['msg']
         )
+        
+    def test_wrong_url(self): 
+        """Tests if a wrong url is sent"""
+        
+        response = self.client.post(
+            self.upload_url, {'file': self.detection_unexpected_file_url})
+
+        self.assertTrue(status.is_client_error(response.status_code))
+        self.assertIn("File not found", response.json()['msg'])
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""

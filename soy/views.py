@@ -65,6 +65,9 @@ class UpdateSoyView(generics.CreateAPIView):
                 )
 
         except Exception as exc:
+            logger.warning(
+                f'[WARNING] Exception while uploading detection: {exc}'
+            )
             return response.Response(
                 {'msg': str(exc)}, status=status.HTTP_404_NOT_FOUND
             )

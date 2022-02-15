@@ -27,6 +27,8 @@ class TestSoy(TestCase):
             settings.SOY_TEST_URL, 'soy_test_error_file.json')
         cls.soy_success_file = os.path.join(
             settings.SOY_TEST_URL, 'soy_test_file.json')
+        cls.soy_unexpected_file_url = os.path.join(
+            'http://dawdawd.ad.awd/', 'tpeoinhRONWORIng.13d1d0')
 
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
@@ -56,6 +58,15 @@ class TestSoy(TestCase):
             'Unexpected sent text data. File has not the expected structure.',
             response.json()['msg']
         )
+        
+    def test_wrong_url(self): 
+        """Tests if a wrong url is sent"""
+        
+        response = self.client.post(
+            self.upload_url, {'file': self.soy_unexpected_file_url})
+
+        self.assertTrue(status.is_client_error(response.status_code))
+        self.assertIn("File not found", response.json()['msg'])
 
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""

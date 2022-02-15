@@ -11,8 +11,16 @@ logger = logging.getLogger('django')
 
 
 class Utils(utils.Utils):
-    def __validate_soy_file(self, unvalid_file: list) -> None:
-        for line in unvalid_file:
+    def __validate_soy_file(self, not_valid_file: list) -> None:
+        """Internal function that validates soy file
+
+        Args:
+            not_valid_file (list): A list with all  file lines
+
+        Raises:
+            ValueError: Raises error if different structure is received
+        """
+        for line in not_valid_file:
             if line[-2:] != '}\n' or line[0] != '{':
                 raise ValueError('File has not the expected structure.')
 
