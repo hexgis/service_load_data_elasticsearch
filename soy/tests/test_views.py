@@ -15,6 +15,7 @@ from .recipes import Recipes
 
 
 class TestSoy(TestCase):
+
     @classmethod
     def setUpClass(cls):
         """Clear index test inside ElasticSearch server."""
@@ -23,10 +24,8 @@ class TestSoy(TestCase):
         cls.create_url = reverse('soy:create-soy')
         cls.delete_url = reverse('soy:delete-soy')
 
-        cls.soy_error_file = os.path.join(
-            settings.SOY_TEST_URL, 'soy_test_error_file.json')
-        cls.soy_success_file = os.path.join(
-            settings.SOY_TEST_URL, 'soy_test_file.json')
+        cls.soy_error_file = settings.SOY_ERROR_TEST_URL
+        cls.soy_success_file = settings.SOY_TEST_URL
         cls.soy_unexpected_file_url = os.path.join(
             'http://dawdawd.ad.awd/', 'tpeoinhRONWORIng.13d1d0')
 
@@ -58,10 +57,10 @@ class TestSoy(TestCase):
             'Unexpected sent text data. File has not the expected structure.',
             response.json()['msg']
         )
-        
-    def test_wrong_url(self): 
+
+    def test_wrong_url(self):
         """Tests if a wrong url is sent"""
-        
+
         response = self.client.post(
             self.upload_url, {'file': self.soy_unexpected_file_url})
 

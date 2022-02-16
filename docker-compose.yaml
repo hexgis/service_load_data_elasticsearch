@@ -53,8 +53,10 @@ services:
       DJANGO_LOG_LEVEL: 'INFO'
       DEBUG: 'true'
       ALLOWED_HOSTS: '["*"]'
-      DETECTION_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/FUNAI/
-      SOY_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/SOY/
+      DETECTION_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/FUNAI/detection_test_file.geojson
+      DETECTION_ERROR_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/FUNAI/detection_test_error_file.geojson
+      SOY_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/SOY/soy_test_file.json
+      SOY_ERROR_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/SOY/soy_test_error_file.json
 
   prod:
     image: us.gcr.io/custom-plating-209314/service_load_data_elasticsearch:latest

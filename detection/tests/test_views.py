@@ -23,10 +23,8 @@ class TestDetection(TestCase):
         cls.create_url = reverse('detection:create-detection')
         cls.delete_url = reverse('detection:delete-detection')
 
-        cls.detection_error_file = os.path.join(
-            settings.DETECTION_TEST_URL, 'detection_test_error_file.geojson')
-        cls.detection_success_file = os.path.join(
-            settings.DETECTION_TEST_URL, 'detection_test_file.geojson')
+        cls.detection_error_file = settings.DETECTION_ERROR_TEST_URL
+        cls.detection_success_file = settings.DETECTION_TEST_URL
         cls.detection_unexpected_file_url = os.path.join(
             'http://fqfqasdf.ad.com/', 'tyjryj5.1r113ra')
 
@@ -57,10 +55,10 @@ class TestDetection(TestCase):
         self.assertEquals(
             'Unexpected sent json data.', response.json()['msg']
         )
-        
-    def test_wrong_url(self): 
+
+    def test_wrong_url(self):
         """Tests if a wrong url is sent"""
-        
+
         response = self.client.post(
             self.upload_url, {'file': self.detection_unexpected_file_url})
 
