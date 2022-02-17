@@ -14,26 +14,32 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      DETECTION_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/FUNAI/detection_test_file.geojson
+      DETECTION_ERROR_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/FUNAI/detection_test_error_file.geojson
+      SOY_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/SOY/soy_test_file.json
+      SOY_ERROR_TEST_URL: https://storage.googleapis.com/xskylab-catalog/SUPPORT/TESTS/SOY/soy_test_error_file.json
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: "3.9"
-    - name: Install dependencies
-      run: |
-        sudo apt install gdal-bin libgdal-dev libgnutls28-dev -y
-        python -m pip install --upgrade pip
-        pip install setuptools==58.0
-        pip install numpy flake8 pytest
-        pip install gdal==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
-        if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with django tests
-      run: |
-        python manage.py test --no-input
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          sudo apt install gdal-bin libgdal-dev libgnutls28-dev -y
+          python -m pip install --upgrade pip
+          pip install setuptools==58.0
+          pip install numpy flake8 pytest
+          pip install gdal==$(gdal-config --version) --global-option=build_ext --global-option="-I/usr/include/gdal"
+          if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with django tests
+        run: |
+          python manage.py test --no-input
