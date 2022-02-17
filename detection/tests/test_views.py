@@ -5,7 +5,6 @@ import pandas as pd
 from django.test import TestCase
 from django.urls import reverse
 from django.conf import settings
-from django.contrib.staticfiles import finders
 from rest_framework.test import APIClient
 from rest_framework import status
 

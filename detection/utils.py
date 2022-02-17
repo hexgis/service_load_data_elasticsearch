@@ -90,7 +90,7 @@ class Utils(utils.Utils):
             file_content = self._download_file_from_url(file_url, '.geojson')
             return json.loads(file_content.read())
         except JSONDecodeError:
-            log = f'Unexpected sent json data.'
+            log = 'Unexpected sent json data.'
             logger.warning(log)
             raise ValueError(log)
         except Exception as exc:
