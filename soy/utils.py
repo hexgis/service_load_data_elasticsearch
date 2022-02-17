@@ -39,7 +39,9 @@ class Utils(utils.Utils):
         index_list = [value for key, value in enumerate(data) if not key % 2]
         value_list = [value for key, value in enumerate(data) if key % 2]
 
-        pd_soy = pd.Series([f'{i}{v}' for i, v in zip(index_list, value_list)])
+        pd_soy = pd.Series(
+            [f'{i}{v}' for i, v in zip(index_list, value_list)]
+        )
 
         logger.info(f'[{datetime.now() - self.now}] series created!')
         return pd_soy

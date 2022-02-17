@@ -40,7 +40,10 @@ class UpdateSoyView(generics.CreateAPIView):
                 f'[{datetime.now() - self.util_class.now}]'
                 f' starting process: '
             )
-            text_file = self.util_class.load_soy_file(request.data.get('file'))
+
+            text_file = self.util_class.load_soy_file(
+                request.data.get('file')
+            )
 
             soy_series = self.util_class.serialize_soy_file(text_file)
 
