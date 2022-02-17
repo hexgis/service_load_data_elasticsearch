@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 import pandas as pd
 
 from datetime import datetime
@@ -13,6 +13,7 @@ logger = logging.getLogger('django')
 
 
 class Utils(utils.Utils):
+
     def __create_detection_series(self, data: object) -> pd.Series:
         """Creates a Panda Series with a serialized data.
 

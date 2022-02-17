@@ -44,8 +44,7 @@ class UpdateDetectionView(generics.CreateAPIView):
             )
 
             json_file = self.util_class.load_detection_file(
-                request.data.get('file')
-            )
+                request.data.get('file'))
 
             detection_series = self.util_class.serialize_detection_file(
                 json_file
@@ -103,9 +102,8 @@ class ClearDetectionStructure(generics.DestroyAPIView):
             f'[{datetime.now() - self.util_class.now}]'
             f' Clearing structure...'
         )
-        es_structure = models.Structure.objects.get(
-            identifier='Detection')
 
+        es_structure = models.Structure.objects.get(identifier='Detection')
         self.util_class.delete_es_structure(es_structure)
 
         logger.info(f'[{datetime.now() - self.util_class.now}] Clear!')
@@ -134,9 +132,8 @@ class CreateDetectionStructure(generics.UpdateAPIView):
             f'[{datetime.now() - self.util_class.now}]'
             f' Creating structure...'
         )
-        es_structure = models.Structure.objects.get(
-            identifier='Detection')
 
+        es_structure = models.Structure.objects.get(identifier='Detection')
         self.util_class.create_es_structure(es_structure)
 
         logger.info(f'[{datetime.now() - self.util_class.now}] Created!')

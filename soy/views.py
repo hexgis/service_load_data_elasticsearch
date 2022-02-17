@@ -72,7 +72,10 @@ class UpdateSoyView(generics.CreateAPIView):
                 {'msg': str(exc)}, status=status.HTTP_404_NOT_FOUND
             )
 
-        return response.Response({'msg': 'Created'}, status=status.HTTP_201_CREATED)
+        return response.Response(
+            {'msg': 'Created'},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class ClearSoyStructiore(generics.DestroyAPIView):
@@ -100,7 +103,10 @@ class ClearSoyStructiore(generics.DestroyAPIView):
 
         logger.info(f'[{datetime.now() - self.util_class.now}] Clear!')
 
-        return response.Response({'msg': 'Index removed'}, status=status.HTTP_200_OK)
+        return response.Response(
+            {'msg': 'Index removed'},
+            status=status.HTTP_200_OK
+        )
 
 
 class CreateSoyStructure(generics.UpdateAPIView):
@@ -119,7 +125,8 @@ class CreateSoyStructure(generics.UpdateAPIView):
             Response: Response Object
         """
         logger.info(
-            f'[{datetime.now() - self.util_class.now}]' f' Creating structure...'
+            f'[{datetime.now() - self.util_class.now}]'
+            f' Creating structure...'
         )
         es_structure = models.Structure.objects.get(identifier='Soy')
 
