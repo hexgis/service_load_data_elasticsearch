@@ -35,6 +35,38 @@ class Utils:
     session.mount('http://', adapter)
     session.mount('https://', adapter)
 
+    def __get_bulk_string(self) -> str:
+        """Internal function to return, for each index, its bulk line.
+
+        It needs an definition for each index app created on the service.
+
+        Returns:
+            str: the bulk line into single line string
+        """
+        raise ValueError('Method __get_bulk_string not implemented.')
+
+    def _download_file_from_url(self, file_url: str, extension: str) -> object:
+        """Download file from a specific sent url.
+
+        Args:
+            file_url (str): Url for downloading the file
+            extension (str): Type of extension for the file
+
+        Returns:
+            object: returns the read file.
+        """
+        try:
+            temp_file = tempfile.NamedTemporaryFile(suffix=extension)
+
+            if (not file_url):
+                raise ValueError('No url file were sent')
+
+            homura.download(file_url, temp_file.name)
+            json_file = open(temp_file.name, 'r+')
+            return json_file
+        except Exception:
+            raise
+
     def create_es_structure(self, es_structure: elastic_models.Structure):
         """Method for sending a new mapping structure for ES Server.
 
@@ -86,28 +118,6 @@ class Utils:
             )
             logger.warning(log)
             raise ValueError(log)
-
-    def _download_file_from_url(self, file_url: str, extension: str) -> object:
-        """Download file from a specific sent url.
-
-        Args:
-            file_url (str): Url for downloading the file
-            extension (str): Type of extension for the file
-
-        Returns:
-            object: returns the read file.
-        """
-        try:
-            temp_file = tempfile.NamedTemporaryFile(suffix=extension)
-
-            if (not file_url):
-                raise ValueError('No url file were sent')
-
-            homura.download(file_url, temp_file.name)
-            json_file = open(temp_file.name, 'r+')
-            return json_file
-        except Exception:
-            raise
 
     def send_bulk_list(
         self,
@@ -186,13 +196,3 @@ class Utils:
 
         logger.info(f'[{datetime.now() - self.now}] Sent')
         return insertion_errors
-
-    def __get_bulk_string(self) -> str:
-        """Internal function to return, for each index, its bulk line
-
-        It needs an definition for each index app created on the service
-
-        Returns:
-            str: the bulk line into single line string
-        """
-        pass
