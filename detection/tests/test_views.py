@@ -4,10 +4,11 @@ import pandas as pd
 
 from django.test import TestCase
 from django.urls import reverse
+from django.conf import settings
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from core.views import UtilFunctions
+from detection import utils
 
 from .recipes import Recipes
 
@@ -17,9 +18,14 @@ class TestDetection(TestCase):
     def setUpClass(cls):
         """Clear index test inside ElasticSearch server."""
         cls.client = APIClient()
-        cls.upload_url = reverse('core:upload-detection')
-        cls.create_url = reverse('core:create-detection')
-        cls.delete_url = reverse('core:delete-detection')
+        cls.upload_url = reverse('detection:upload-detection')
+        cls.create_url = reverse('detection:create-detection')
+        cls.delete_url = reverse('detection:delete-detection')
+
+        cls.detection_error_file = settings.DETECTION_ERROR_TEST_URL
+        cls.detection_success_file = settings.DETECTION_TEST_URL
+        cls.detection_unexpected_file_url = os.path.join(
+            'http://fqfqasdf.ad.com/', 'tyjryj5.1r113ra')
 
         cls.recipes = Recipes()
         cls.es_structure = cls.recipes.es_object.make()
@@ -33,26 +39,37 @@ class TestDetection(TestCase):
         """Tests if no file is sent."""
         response = self.client.post(self.upload_url)
         self.assertTrue(status.is_client_error(response.status_code))
+        self.assertEquals(
+            'File not found. No url file were sent', response.json()['msg']
+        )
 
     def test_upload_error_file(self):
         """
         Tests if an json file with error is sent and a error is returned.
         """
-
-        with open('core/tests/mockDataWithError.json') as file:
-            response = self.client.post(self.upload_url, {'file': file})
+        response = self.client.post(
+            self.upload_url, {'file': self.detection_error_file})
 
         self.assertTrue(status.is_client_error(response.status_code))
         self.assertEquals(
             'Unexpected sent json data.', response.json()['msg']
         )
 
+    def test_wrong_url(self):
+        """Tests if a wrong url is sent"""
+
+        response = self.client.post(
+            self.upload_url, {'file': self.detection_unexpected_file_url})
+
+        self.assertTrue(status.is_client_error(response.status_code))
+        self.assertIn("File not found", response.json()['msg'])
+
     def test_verify_if_file_is_serialized(self):
         """Tests equality between serialized data and sent json file."""
-        with open('core/tests/mockData.json') as json_file:
-            js = json.loads(json_file.read())
-            util_class = UtilFunctions()
-            series = util_class.serialize_detection_file(js)
+
+        util_class = utils.Utils()
+        js = util_class.load_detection_file(self.detection_success_file)
+        series = util_class.serialize_detection_file(js)
 
         # Verifies if returned data is a Series type.
         self.assertIsInstance(series, pd.Series)
@@ -90,7 +107,3 @@ class TestDetection(TestCase):
         """Tests if clear detection structure is safely created."""
         response = self.client.put(self.create_url)
         self.assertTrue(status.is_success(response.status_code))
-
-    def test_fixture_file_exists(self):
-        """Tests if ES file mapping structure exists."""
-        self.assertTrue(os.path.exists('core/fixtures/es_structure.yaml'))

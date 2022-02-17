@@ -15,15 +15,14 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import (
-    UpdateDetectionView, ClearDetectionStructure, CreateDetectionStructure
-)
+from detection import views
+
 
 urlpatterns = [
-    path('delete/', ClearDetectionStructure.as_view(),
+    path('delete/', views.ClearDetectionStructure.as_view(),
          name='delete-detection'),
-    path('upload/', UpdateDetectionView.as_view(),
+    path('upload/', views.UpdateDetectionView.as_view(),
          name='upload-detection'),
-    path('create/', CreateDetectionStructure.as_view(),
+    path('create/', views.CreateDetectionStructure.as_view(),
          name='create-detection'),
 ]

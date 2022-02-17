@@ -26,14 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
     'DJANGO_SECRET_KEY',
-    'django-insecure-k%9k%h4e0l9u&quu*)w9&-uce6fr#8jp@b113l=^jj^!+#82oy'
+    'django-insecure-k%9k%h4e0l9u&quu*)w9&-uce6fr#8jp@b113l=^jj^!+#82oy',
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(distutils.util.strtobool(os.getenv('DEBUG', 'True')))
+DEBUG = bool(distutils.util.strtobool(os.getenv('DEBUG', 'true')))
 
 # Django ALLOWED_HOSTS
-ALLOWED_HOSTS = json.loads(os.getenv("ALLOWED_HOSTS", '["*"]'))
+ALLOWED_HOSTS = json.loads(os.getenv('ALLOWED_HOSTS', '["*"]'))
 
 # Application definition
 INSTALLED_APPS = [
@@ -42,11 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     # Local apps
     'rest_framework',
     'rest_framework_gis',
-    'core'
+    'detection',
+    'soy',
+    'elastic',
 ]
 
 MIDDLEWARE = [
@@ -168,9 +169,15 @@ LOGGING = {
 }
 
 # Elastic Search basic config
-BULK_SIZE_REQUEST = os.getenv("BULK_SIZE_REQUEST", 1000)
+BULK_SIZE_REQUEST = os.getenv('BULK_SIZE_REQUEST', 1000)
 ELASTICSEARCH_URL = os.getenv(
-    "ELASTICSEARCH_URL", "http://es.xskylab.com:9200")
+    'ELASTICSEARCH_URL', 'http://es.xskylab.com:9200')
 
 # Variable controlling SLL validation for es requests
-VERIFY_SSL = bool(distutils.util.strtobool(os.getenv("VERIFY_SSL", True)))
+VERIFY_SSL = bool(distutils.util.strtobool(os.getenv('VERIFY_SSL', 'true')))
+
+# Test only settings
+DETECTION_TEST_URL = os.getenv('DETECTION_TEST_URL', '')
+DETECTION_ERROR_TEST_URL = os.getenv('DETECTION_ERROR_TEST_URL', '')
+SOY_TEST_URL = os.getenv('SOY_TEST_URL', '')
+SOY_ERROR_TEST_URL = os.getenv('SOY_ERROR_TEST_URL', '')
